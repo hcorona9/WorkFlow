@@ -1,0 +1,7 @@
+I thought TestRail was helpful for organizing and managing test cases in a clear and structured way. It made it easy to see which tests passed or failed and track overall progress through the dashboard. I liked how everything was kept in one place, which made testing feel more organized.
+
+At first, it was a little confusing to navigate and understand where everything was, especially when creating test runs and adding results. But after using it, it became easier to understand.
+
+One question I have is how TestRail is used in real-world projects with large teams. I also wonder how teams manage and update a large number of test cases over time without it becoming overwhelming.
+
+Overall, I think TestRail is a useful tool for software testing and helps keep everything organized.
