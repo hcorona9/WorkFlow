@@ -1,0 +1,508 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{graphicx}
+
+\title{Design Specification\\
+\large QTC Workflow Queue (WFQ) Administrator Application}
+\author{Dylan Huang \and Laila Velasquez \and Samuel Acevedo \and Haik Oganesyan \\
+\and Ruben Flores \and Slok Patel \and Edwin Rojas \and Jesus Ojeda \\
+\and Alexander Diaz \and Zhen Zhao}
+\date{Version 1.0 \\ October 17, 2025}
+
+\begin{document}
+
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────
+\section{Overview}
+% ─────────────────────────────────────────────
+
+This Design Specification provides a detailed breakdown of every page, screen, component, and
+tool within the QTC Workflow Queue (WFQ) Administrator Application. It is intended to serve
+as a reference for developers building the UI and for QA testers verifying that each screen
+meets the specified requirements.
+
+The application is a web-based, server-side rendered ASP.NET Core MVC application. All pages
+are accessible only to users who have been granted administrative access via the
+\texttt{?is\_admin=true} URL query string flag.
+
+% ─────────────────────────────────────────────
+\section{Global Layout and Branding}
+% ─────────────────────────────────────────────
+
+\subsection{Header / Navigation Bar}
+\begin{itemize}
+    \item \textbf{Location:} Top of every page.
+    \item \textbf{Contents:}
+    \begin{itemize}
+        \item Leidos / QTC Health Services logo (top-left).
+        \item Application title: ``Workflow Management System'' (center or adjacent to logo).
+        \item ``Administrator Portal'' label (top-right).
+    \end{itemize}
+    \item \textbf{Branding:} Must adhere to Leidos corporate color palette (purple/white
+    primary scheme as shown in mockups).
+    \item \textbf{Behavior:} The header is static and does not scroll with the page content.
+\end{itemize}
+
+\subsection{Footer}
+\begin{itemize}
+    \item \textbf{Location:} Bottom of every page.
+    \item \textbf{Contents:} Copyright notice and application version number.
+\end{itemize}
+
+\subsection{Notification / Toast Messages}
+\begin{itemize}
+    \item \textbf{Trigger:} Displayed after any create, update, or delete operation.
+    \item \textbf{Success:} Green toast — e.g., ``Workflow saved successfully.''
+    \item \textbf{Error:} Red toast — e.g., ``A workflow with this name already exists.''
+    \item \textbf{Behavior:} Auto-dismisses after 4 seconds or can be manually closed.
+\end{itemize}
+
+\subsection{Error Page}
+\begin{itemize}
+    \item \textbf{Trigger:} Displayed when an unhandled server-side exception occurs.
+    \item \textbf{Contents:} A user-friendly message (e.g., ``An unexpected error occurred.
+    Please try again or contact your administrator.'') with no technical stack trace visible
+    to the user.
+\end{itemize}
+
+\subsection{Access Denied Page}
+\begin{itemize}
+    \item \textbf{Trigger:} Displayed when a user attempts to access the application without
+    the \texttt{?is\_admin=true} flag.
+    \item \textbf{Contents:} ``Access Denied. You do not have permission to view this page.''
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Page: Workflow Management Dashboard}
+% ─────────────────────────────────────────────
+
+\subsection{Purpose}
+The main landing page of the application. Displays a paginated, searchable, and sortable list
+of all workflows in the WFQ database.
+
+\subsection{URL}
+\texttt{/Workflows/Index} (or \texttt{/})
+
+\subsection{Access Control}
+Requires \texttt{[Authorize(Policy = "IsAdmin")]}. Redirects to Access Denied page if not
+authorized.
+
+\subsection{UI Components}
+
+\subsubsection{Page Title}
+\begin{itemize}
+    \item Text: ``Workflow Management''
+    \item Subtitle: ``Manage and monitor all workflow processes''
+\end{itemize}
+
+\subsubsection{Search Bar}
+\begin{itemize}
+    \item \textbf{Type:} Text input field.
+    \item \textbf{Placeholder:} ``Search workflows...''
+    \item \textbf{Behavior:} Filters the workflow list by Name on input change or form
+    submission. Sends a GET request with a \texttt{search} query parameter.
+    \item \textbf{Max Length:} 100 characters.
+\end{itemize}
+
+\subsubsection{Sort Dropdown}
+\begin{itemize}
+    \item \textbf{Type:} Select/dropdown.
+    \item \textbf{Options:} ``Name A-Z'', ``Name Z-A'', ``Newest First'', ``Oldest First''.
+    \item \textbf{Behavior:} Re-fetches the workflow list with the selected sort order applied.
+\end{itemize}
+
+\subsubsection{Create New Workflow Button}
+\begin{itemize}
+    \item \textbf{Label:} ``+ Create New Workflow''
+    \item \textbf{Style:} Primary button (purple, per Leidos branding).
+    \item \textbf{Behavior:} Opens the Create Workflow Modal Dialog (Section 4).
+\end{itemize}
+
+\subsubsection{Workflow Table}
+\begin{itemize}
+    \item \textbf{Columns:}
+    \begin{itemize}
+        \item \textbf{Name} (clickable link, navigates to Workflow Details page)
+        \item \textbf{Description} (truncated if too long)
+        \item \textbf{Status} (badge: ``New'' / ``In Progress'' / ``Completed'')
+        \item \textbf{Actions} (Edit icon, View Steps icon)
+    \end{itemize}
+    \item \textbf{Empty State:} If no workflows exist or match the search, display: ``No
+    workflows found.''
+\end{itemize}
+
+\subsubsection{Pagination Controls}
+\begin{itemize}
+    \item \textbf{Location:} Below the workflow table.
+    \item \textbf{Contents:} ``Items per page'' dropdown (options: 10, 25, 50), page number
+    buttons, ``Previous'' and ``Next'' buttons, and a ``Page X of Y'' indicator.
+    \item \textbf{Behavior:} Sends a GET request with \texttt{page} and \texttt{pageSize}
+    query parameters.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Modal: Create / Edit Workflow}
+% ─────────────────────────────────────────────
+
+\subsection{Purpose}
+A modal dialog used for both creating a new workflow and editing an existing one.
+
+\subsection{Trigger}
+\begin{itemize}
+    \item \textbf{Create:} Clicking the ``+ Create New Workflow'' button on the Dashboard.
+    \item \textbf{Edit:} Clicking the Edit (pencil) icon in the Actions column of the
+    workflow table.
+\end{itemize}
+
+\subsection{UI Components}
+
+\subsubsection{Modal Header}
+\begin{itemize}
+    \item \textbf{Create mode:} ``Create New Workflow''
+    \item \textbf{Edit mode:} ``Edit Workflow''
+    \item Close (X) button in the top-right corner.
+\end{itemize}
+
+\subsubsection{Form Fields}
+\begin{itemize}
+    \item \textbf{Name} (required)
+    \begin{itemize}
+        \item Type: Text input.
+        \item Validation: Required. Must be unique across all workflows. Maximum length TBD
+        by Dev Team (see Appendix C of SRS).
+        \item Error message: ``Workflow Name is required.'' / ``A workflow with this name
+        already exists.''
+    \end{itemize}
+    \item \textbf{Description} (optional)
+    \begin{itemize}
+        \item Type: Textarea.
+        \item Validation: None required.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Action Buttons}
+\begin{itemize}
+    \item \textbf{Save Workflow} (primary button) --- Submits the form via POST to
+    \texttt{/Workflows/Create} or PUT to \texttt{/Workflows/Edit/\{id\}}.
+    \item \textbf{Cancel} (secondary button) --- Closes the modal without saving.
+\end{itemize}
+
+\subsubsection{Behavior on Success}
+Modal closes. Dashboard workflow list refreshes. Success toast is displayed.
+
+\subsubsection{Behavior on Validation Error}
+Modal remains open. Inline validation error messages appear below the relevant fields.
+
+% ─────────────────────────────────────────────
+\section{Page: Workflow Details}
+% ─────────────────────────────────────────────
+
+\subsection{Purpose}
+Displays the full details of a single workflow, including its steps, tasks, and history.
+
+\subsection{URL}
+\texttt{/Workflows/Details/\{id\}}
+
+\subsection{UI Components}
+
+\subsubsection{Breadcrumb / Back Navigation}
+\begin{itemize}
+    \item ``$\leftarrow$ Back to Workflows'' link at the top of the page.
+\end{itemize}
+
+\subsubsection{Workflow Header}
+\begin{itemize}
+    \item Workflow Name (large heading).
+    \item Workflow Description (subtitle).
+\end{itemize}
+
+\subsubsection{Tab Navigation}
+Three tabs: \textbf{Steps}, \textbf{Tasks}, \textbf{History}.
+
+\subsubsection{Steps Tab}
+\begin{itemize}
+    \item \textbf{Create New Step Button:} ``+ Create New Step'' (opens Create/Edit Step
+    Modal).
+    \item \textbf{Steps Table:}
+    \begin{itemize}
+        \item Columns: Step Number, Step Name, Description, Actions (Edit / Delete).
+        \item Empty state: ``No steps found. Create your first step to get started.''
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Tasks Tab}
+\begin{itemize}
+    \item \textbf{Tasks Table:}
+    \begin{itemize}
+        \item Columns: Assigned To, Status, Step, Actions (Complete Task / Reassign).
+        \item Empty state: ``No tasks found for this workflow.''
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{History Tab}
+\begin{itemize}
+    \item \textbf{History List:}
+    \begin{itemize}
+        \item Displays task and step history in chronological order.
+        \item Each entry shows: timestamp, actor, action taken, and outcome.
+        \item Empty state: ``No history available for this workflow.''
+    \end{itemize}
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Modal: Create / Edit Workflow Step}
+% ─────────────────────────────────────────────
+
+\subsection{Purpose}
+A modal dialog used for both creating a new step within a workflow and editing an existing
+step.
+
+\subsection{Trigger}
+\begin{itemize}
+    \item \textbf{Create:} Clicking the ``+ Create New Step'' button on the Steps tab.
+    \item \textbf{Edit:} Clicking the Edit (pencil) icon in the step table Actions column.
+\end{itemize}
+
+\subsection{Form Fields}
+\begin{itemize}
+    \item \textbf{Step Name} (required)
+    \begin{itemize}
+        \item Type: Text input.
+        \item Validation: Required. Must be unique within the workflow.
+        \item Error message: ``Step Name is required.'' / ``A step with this name already
+        exists in this workflow.''
+    \end{itemize}
+    \item \textbf{Step Number} (optional)
+    \begin{itemize}
+        \item Type: Number input.
+        \item Validation: Must be unique within the workflow if provided. Auto-assigned if
+        left blank.
+    \end{itemize}
+    \item \textbf{Description} (optional)
+    \begin{itemize}
+        \item Type: Textarea.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Action Buttons}
+\begin{itemize}
+    \item \textbf{Save Step} (primary) --- Submits via POST to
+    \texttt{/Workflows/CreateStep} or PUT to \texttt{/Workflows/EditStep}.
+    \item \textbf{Cancel} (secondary) --- Closes the modal without saving.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Modal: Delete Step Confirmation}
+% ─────────────────────────────────────────────
+
+\subsection{Purpose}
+A confirmation dialog displayed before a workflow step is deleted, to prevent accidental
+data loss.
+
+\subsection{Trigger}
+Clicking the Delete (trash) icon in the step table Actions column.
+
+\subsection{UI Components}
+\begin{itemize}
+    \item \textbf{Warning message:} ``Are you sure you want to delete this step? This action
+    is irreversible.''
+    \item \textbf{Dependency notice} (if applicable): ``This step has active tasks. They will
+    be reassigned to the next step.''
+    \item \textbf{Confirm button} (red/danger) --- Submits DELETE to
+    \texttt{/Workflows/DeleteStep/\{stepId\}}.
+    \item \textbf{Cancel button} (secondary) --- Closes the modal without deleting.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Task Management Actions}
+% ─────────────────────────────────────────────
+
+\subsection{Reassign Task}
+\begin{itemize}
+    \item \textbf{Trigger:} Clicking the ``Reassign'' button in the Tasks tab.
+    \item \textbf{Behavior:} Opens a small modal or inline form allowing the admin to select
+    a new user to assign the task to.
+    \item \textbf{Validation:} Cannot reassign a task that is already marked ``Completed.''
+    \item \textbf{Endpoint:} PUT \texttt{/Tasks/\{id\}/Assign}
+\end{itemize}
+
+\subsection{Complete Task}
+\begin{itemize}
+    \item \textbf{Trigger:} Clicking the ``Complete Task'' button in the Tasks tab.
+    \item \textbf{Behavior:} Marks the task status as ``Completed'' in the database.
+    \item \textbf{Validation:} Cannot complete a task that is already ``Completed.''
+    \item \textbf{Endpoint:} PUT \texttt{/Tasks/\{id\}/Complete}
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Form Validation Summary}
+% ─────────────────────────────────────────────
+
+All forms in the application apply validation on both the client side (JavaScript) and the
+server side (ASP.NET Model validation). The following rules apply globally:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Field & Rule & Error Message \\
+\midrule
+Workflow Name    & Required                        & ``Workflow Name is required.'' \\
+Workflow Name    & Unique across all workflows     & ``A workflow with this name already exists.'' \\
+Workflow Name    & Max length (TBD)                & ``Workflow Name exceeds maximum length.'' \\
+Step Name        & Required                        & ``Step Name is required.'' \\
+Step Name        & Unique within workflow          & ``A step with this name already exists.'' \\
+Step Number      & Unique within workflow (if set) & ``This step number is already in use.'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────
+\section{Accessibility and Compliance}
+% ─────────────────────────────────────────────
+
+\begin{itemize}
+    \item All form inputs must have associated \texttt{<label>} elements.
+    \item All interactive elements must be keyboard-navigable (Tab, Enter, Escape).
+    \item Color contrast must meet WCAG 2.1 AA standards.
+    \item Modal dialogs must trap focus while open and return focus to the triggering element
+    on close.
+    \item The application should consider conformance with Section 508 compliance rules.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+% SNAPSHOT 2 ADDITION
+% ─────────────────────────────────────────────
+\section{Snapshot 2 Addition: Email Notification Behavior}
+\textit{Added by CS3338 Course Team --- Snapshot 2.}
+
+This section describes how the Email Notification System integrates with the existing UI
+pages. No new pages are added for this feature --- notifications are triggered silently in
+the background as a result of existing user actions.
+
+\subsection{Notification: Task Assigned / Reassigned}
+\begin{itemize}
+    \item \textbf{Trigger page:} Tasks tab on the Workflow Details page (Section 6).
+    \item \textbf{Trigger action:} Admin clicks ``Reassign'' and confirms a new assignee.
+    \item \textbf{Behavior:} After the task record is updated in the database, the
+    \texttt{INotificationService.SendTaskAssignedAsync()} method is called with the new
+    assignee's email address.
+    \item \textbf{Email subject:} \texttt{[WFQ] Task Assigned: \{TaskName\}}
+    \item \textbf{Email body includes:} Task name, workflow name, step name, and a link to
+    the workflow details page.
+    \item \textbf{Failure behavior:} If the email fails to send, a warning is logged
+    server-side. The UI shows the standard success toast for the reassignment action --- the
+    notification failure is not surfaced to the admin.
+\end{itemize}
+
+\subsection{Notification: Task Completed}
+\begin{itemize}
+    \item \textbf{Trigger page:} Tasks tab on the Workflow Details page (Section 6).
+    \item \textbf{Trigger action:} Admin clicks ``Complete Task'' and confirms.
+    \item \textbf{Behavior:} After the task status is updated to ``Completed'' in the
+    database, \texttt{INotificationService.SendTaskCompletedAsync()} is called, notifying
+    the workflow administrator.
+    \item \textbf{Email subject:} \texttt{[WFQ] Task Completed: \{TaskName\}}
+    \item \textbf{Email body includes:} Task name, workflow name, completion timestamp, and
+    a link to the workflow details page.
+    \item \textbf{Failure behavior:} Same as above --- logged silently, not surfaced to the
+    admin.
+\end{itemize}
+
+\subsection{Notification: Workflow Step Created}
+\begin{itemize}
+    \item \textbf{Trigger page:} Steps tab on the Workflow Details page (Section 6), via
+    the Create/Edit Step Modal (Section 7).
+    \item \textbf{Trigger action:} Admin submits the ``Create New Step'' form successfully.
+    \item \textbf{Behavior:} After the new step is persisted to the database,
+    \texttt{INotificationService.SendStepCreatedAsync()} is called, notifying the workflow
+    administrator.
+    \item \textbf{Email subject:} \texttt{[WFQ] New Step Added: \{StepName\} in
+    \{WorkflowName\}}
+    \item \textbf{Email body includes:} Step name, step number, workflow name, and a link
+    to the workflow details page.
+    \item \textbf{Failure behavior:} Same as above.
+\end{itemize}
+
+\subsection{Notifications Disabled State}
+When \texttt{Notifications:Enabled} is set to \texttt{false} in
+\texttt{appsettings.json}, the \texttt{INotificationService} methods are called but
+immediately return without sending any email. This allows the feature to be safely disabled
+in development and testing environments without code changes.
+
+\subsection{No UI Changes Required}
+The notification system operates entirely in the background. No new buttons, forms, or pages
+are added to the UI as part of this feature. The only visible change is that the existing
+success toast messages remain unchanged --- notification delivery is transparent to the
+administrator.
+
+% ─────────────────────────────────────────────
+% SNAPSHOT 3 ADDITION
+% ─────────────────────────────────────────────
+\section{Snapshot 3 Addition: Workflow Export Buttons}
+\textit{Added by CS3338 Course Team --- Snapshot 3.}
+
+This section describes the UI changes introduced by the Workflow Export / Report Generation
+feature. Two new buttons are added to the Workflow Details page. No new pages are created.
+
+\subsection{Export Buttons — Location and Appearance}
+\begin{itemize}
+    \item \textbf{Location:} Top-right of the Workflow Details page (Section 5), adjacent
+    to the existing workflow header. Positioned on the same row as the workflow name and
+    description.
+    \item \textbf{Buttons:}
+    \begin{itemize}
+        \item \textbf{``Export PDF''} --- secondary button style (outlined, not filled).
+        Icon: document/PDF icon. Color: consistent with Leidos branding.
+        \item \textbf{``Export CSV''} --- secondary button style (outlined, not filled).
+        Icon: spreadsheet/CSV icon. Color: consistent with Leidos branding.
+    \end{itemize}
+    \item \textbf{Spacing:} The two export buttons are grouped together with a small gap
+    between them, separated from the workflow title by adequate whitespace.
+\end{itemize}
+
+\subsection{Export PDF Button}
+\begin{itemize}
+    \item \textbf{Trigger:} Admin clicks ``Export PDF''.
+    \item \textbf{Behavior:} Browser sends a GET request to
+    \texttt{/Workflows/ExportPdf?workflowId=\{id\}}. The server generates the PDF and
+    returns it as a file download. The browser prompts the user to save or open the file.
+    The admin remains on the Workflow Details page.
+    \item \textbf{File name format:} \texttt{\{WorkflowName\}\_Report\_\{YYYY-MM-DD\}.pdf}
+    \item \textbf{Loading state:} Button shows a spinner and is temporarily disabled while
+    the server generates the file, to prevent duplicate requests.
+    \item \textbf{Error state:} If generation fails, a red error toast is displayed:
+    ``Failed to generate PDF. Please try again.''
+\end{itemize}
+
+\subsection{Export CSV Button}
+\begin{itemize}
+    \item \textbf{Trigger:} Admin clicks ``Export CSV''.
+    \item \textbf{Behavior:} Browser sends a GET request to
+    \texttt{/Workflows/ExportCsv?workflowId=\{id\}}. The server generates the CSV and
+    returns it as a file download. The admin remains on the Workflow Details page.
+    \item \textbf{File name format:} \texttt{\{WorkflowName\}\_Tasks\_\{YYYY-MM-DD\}.csv}
+    \item \textbf{Loading state:} Same spinner/disabled behavior as the PDF button.
+    \item \textbf{Error state:} If generation fails, a red error toast is displayed:
+    ``Failed to generate CSV. Please try again.''
+\end{itemize}
+
+\subsection{Empty Data Handling}
+\begin{itemize}
+    \item If the workflow has no steps, the PDF steps table displays: ``No steps have been
+    added to this workflow.''
+    \item If the workflow has no tasks, the PDF tasks table and the CSV file display:
+    ``No tasks available.'' (PDF) or a header row with no data rows (CSV).
+    \item Export buttons are always visible and enabled regardless of whether the workflow
+    has steps or tasks.
+\end{itemize}
+
+\end{document}

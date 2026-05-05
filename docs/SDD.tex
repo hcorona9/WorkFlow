@@ -1,0 +1,732 @@
+﻿\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{parskip}
+\usepackage{listings}
+
+\title{Software Design Document\\
+\large QTC Workflow Queue (WFQ)}
+\author{Original Authors: Dylan Huang, Laila Velasquez, Samuel Acevedo, Haik Oganesyan,\\
+Ruben Flores, Slok Patel, Edwin Rojas, Jesus Ojeda, Alexander Diaz, Zhen Zhao\\[0.5em]
+\textit{Adapted to \LaTeX{} by CS3338 Course Team}}
+\date{Version 1.8 \\ Originally: October 17, 2025 \\ Adapted: \today}
+
+\begin{document}
+
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\section*{Revision History}
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Name & Date & Reason For Changes & Version \\
+\midrule
+All group members  & 10/17/2025 & Initial Document                                    & 1.0 \\
+Slok Patel         & 11/4/2025  & Finalized Section 2, Removed API info               & 1.6 \\
+Ruben Flores       & 10/22/2025 & Section 3                                           & 1.2 \\
+Edwin Rojas        & 10/22/2025 & Section 1 Introduction, Section 4 System Architecture & 1.2 \\
+Samuel Acevedo     & 10/23/2025 & Section 8: Database Design completion               & 1.3 \\
+Ruben Flores       & 10/23/2025 & Section 4, 6, and 7, 9                              & 1.4 \\
+Alexander Diaz     & 10/23/2025 & Section 9 User Interface                            & 1.5 \\
+Laila Velasquez    & 10/23/2025 & Section 10: Requirements Validation and Table of Contents & 1.5 \\
+Dylan Huang        & 10/23/2025 & Section 12: References                              & 1.5 \\
+Haik Oganesyan     & 10/22/2025 & Section 5: Policies and Tactics, Section 11: Glossary & 1.5 \\
+Edwin Rojas        & 11/4/2025  & Section 1 and Section 4 Revisions                  & 1.6 \\
+Samuel Acevedo     & 11/5/2025  & Section 12.2 Regulatory References Revision         & 1.7 \\
+Zhen Zhao          & 11/5/2025  & Section 12.2 Regulatory Revisions                  & 1.7 \\
+Edwin Rojas        & 11/5/2025  & Section 10 Requirements Validation Revisions        & 1.7 \\
+Ruben Flores       & 11/5/2025  & Added existing architecture info                    & 1.8 \\
+Samuel Acevedo     & 11/12/2025 & Removed Section 12.2, updated Section 2.2 and 3.4  & 1.8 \\
+Laila Velasquez    & 11/12/2025 & Section 10 edited, removed API calling              & 1.8 \\
+Edwin Rojas        & 11/12/2025 & Section 1 Introduction updated component descriptions & 1.8 \\
+Dylan Huang        & 11/14/2025 & Removed Business Logic Mentions in 6.2              & 1.8 \\
+Jesus Ojeda        & 11/17/2025 & Revised section 6.4.6 and Section 4.1 DFD           & 1.8 \\
+Jesus Ojeda        & 11/18/2025 & Revised formatting for sections 7 and 8             & 1.8 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\newpage
+
+\section{Introduction}
+
+\subsection{Purpose}
+The purpose of this Software Design Document (SDD) is to define the technical design,
+architectural components, and implementation strategies for the (New) QTC Workflow Queue
+(WFQ) Administrator Application.
+
+This document serves as the primary technical specification for the development team. It guides
+the implementation of a new, monolithic ASP.NET Core MVC application that performs
+administrative functions through direct data-level interaction with the (Existing) WFQ database
+to meet the requirements defined by Leidos QTC Health Services.
+
+\subsection{Document Conventions}
+This document follows standard Software Design Document (SDD) conventions for clarity and
+consistency.
+\begin{itemize}
+    \item Code snippets, file names, commands, and SQL statements are formatted in
+    \texttt{monospace font}.
+    \item System components and modules are referred to using \textbf{bold text}.
+    \item User stories and requirements identifiers (e.g., \textit{REQ-1.1}) are listed where
+    applicable to reference design traceability.
+    \item Diagrams are labeled and captioned for cross-reference in other sections.
+\end{itemize}
+
+\subsection{Intended Audience and Reading Suggestions}
+This document is intended for multiple roles within the project, including:
+\begin{itemize}
+    \item \textbf{Developers:} To understand the system architecture, database schema, and
+    technical design necessary for implementing and extending features.
+    \item \textbf{Testers/QA Engineers:} To identify system workflows, interfaces, and data
+    flows that require verification and validation during testing.
+    \item \textbf{Project Managers and Stakeholders:} To review the technical feasibility and
+    alignment of the system design with business objectives.
+    \item \textbf{Technical Writers:} To create or update user documentation based on
+    finalized design components.
+\end{itemize}
+
+\subsection{System Overview}
+The project entails the development of a single, (New) web application designed to provide
+administrative control over the (Existing) QTC Workflow Queue (WFQ) system. The new
+application's sole integration point is a direct, data-level connection to the existing WFQ MS
+SQL Server database. The system is organized into two major components:
+
+\begin{enumerate}
+    \item \textbf{New Administrator Application (New):} An ASP.NET Core MVC application. It
+    contains the server-side rendered User Interface (UI) using Razor Pages, the business-level
+    service layer, and the data access layer required to manage the workflow system.
+    \item \textbf{WFQ Database (Existing):} The persistent Microsoft SQL Server data store used
+    by the QTC Workflow Queue system. The database schema, its tables, and its stored procedures
+    will not be modified by this project.
+\end{enumerate}
+
+\textbf{IN SCOPE:}
+\begin{itemize}
+    \item Designing and building a new ASP.NET Core MVC web application hosted on IIS
+    \item Implementing a server-side rendered user interface
+    \item Implementing all administrative features as specified in the ``Workflow Queue
+    Administrator Requirements'' document
+    \item Implementing a simple, session-based authorization check based on a URL query string
+    flag provided in the initial request
+\end{itemize}
+
+\textbf{OUT OF SCOPE:}
+\begin{itemize}
+    \item Modifying the (Existing) Workflow database schema or its stored procedures
+    \item Making any changes to the existing User \& Manager UI
+\end{itemize}
+
+\section{Design Considerations}
+
+\subsection{Assumptions and Dependencies}
+Our design and implementation rely on the following assumptions and dependencies:
+
+\textbf{Software/Hardware Dependencies:}
+\begin{itemize}
+    \item \textbf{Dependency on WFQ Database Schema (Existing):} The design is entirely
+    dependent on the schema, constraints, and stored procedures of the (Existing) WFQ SQL
+    Server database. All data operations performed by the (New) application must conform to
+    this existing, unchangeable structure.
+    \item \textbf{Direct Database Interaction (No API):} The application communicates directly
+    with the SQL Server database through server-side data access logic (e.g., ADO.NET or
+    Entity Framework). There is no intermediary API layer between the UI and database.
+    \item \textbf{Dependency on Microsoft Environment:} The solution is dependent on the QTC's
+    Microsoft-based technology stack: Windows Server, IIS, Microsoft SQL Server, and
+    .NET Framework / ASP.NET.
+    \item \textbf{Dependency on URL-based Authorization Flag:} Administrative access will be
+    granted through a query string parameter (e.g., \texttt{?is\_admin=true}) appended by the
+    hosting environment.
+\end{itemize}
+
+\textbf{Key Challenges and Risks:}
+\begin{itemize}
+    \item \textbf{Performance Impact:} Administrative database operations (reads and writes)
+    could potentially impact the performance of the live QTC workflow system that shares the
+    database.
+    \item \textbf{Data Integrity:} Direct database access carries the risk of data corruption
+    if operations are not handled atomically.
+\end{itemize}
+
+\subsection{General Constraints}
+\begin{itemize}
+    \item \textbf{Technology Stack Constraint:} The project is constrained to the existing QTC
+    technology stack: C\#, ASP.NET Core MVC, Entity Framework Core, and MS SQL Server.
+    \item \textbf{Direct Database Access Only:} The application's sole integration point is a
+    direct connection to the MS SQL Server. No intermediary APIs will be used for data access.
+    \item \textbf{Immutable Database:} The WFQ database schema, including all tables, views,
+    and stored procedures, is considered immutable. This project will not make any
+    modifications to the database structure.
+    \item \textbf{Simple Query String Flag:} User authorization is constrained to checking for
+    a URL query string parameter (e.g., \texttt{?is\_admin=true}) appended to the URL by the
+    hosting infrastructure.
+    \item \textbf{Standards Compliance (HIPAA/HITECH):} As the application will interact with
+    a database containing Protected Health Information (PHI) and Personally Identifiable
+    Information (PII), the design must be compliant with HIPAA and the HITECH Act.
+\end{itemize}
+
+\subsection{Goals and Guidelines}
+\begin{itemize}
+    \item \textbf{Primary Goal --- Deliver a Complete Administrator Interface:} Build an
+    intuitive, secure, and functional Admin UI that allows authorized users to create, modify,
+    and manage workflows directly through the WFQ system.
+    \item \textbf{Goal --- Adherence to Professional Coding Standards:} Follow Microsoft C\#
+    coding conventions and QTC's internal best practices.
+    \item \textbf{Guideline --- Maintainability and Extensibility:} The solution should be
+    modular and maintainable, with clean server-side logic, reusable components, and
+    well-commented source code.
+    \item \textbf{Guideline --- Consistency:} The Admin module should look, behave, and
+    perform like a natural extension of the existing WFQ application.
+\end{itemize}
+
+\subsection{Development Methods}
+This project uses a Hybrid Agile approach, combining structured documentation with iterative
+development cycles. This method allows flexibility for sponsor feedback while maintaining clear
+deliverables.
+\begin{itemize}
+    \item \textbf{Iterative Development:} Work is divided into short development cycles that
+    refine both the frontend (Admin UI) and backend (database transactions). Each iteration
+    includes design, implementation, and testing.
+    \item \textbf{Stakeholder Collaboration:} The project team meets regularly with the QTC
+    sponsor to demonstrate progress, gather feedback, and align priorities.
+    \item \textbf{Requirements Backlog:} All tasks are derived from the ``Required
+    Improvements'' and ``Workflow Queue Administrator Requirements'' documents.
+    \item \textbf{Focus on Deliverables:} The team will produce both academic deliverables
+    (SRS, SDD) and sponsor deliverables (working code, UI mockups, documentation).
+\end{itemize}
+
+\section{Architectural Strategies}
+
+\subsection{Technology Stack}
+The system uses C\# with ASP.NET MVC on .NET Framework 4.6.1 or higher. MS SQL Server
+provides the database. Entity Framework is used with stored procedures. IIS on Windows Server
+hosts the application.
+
+\subsection{Reuse and Integration Strategy}
+The application reuses the existing, canonical WFQ SQL Server database schema as its single
+source of truth. There is no reuse or integration with any other application-level components
+(like APIs or UI libraries).
+
+\subsection{Error Detection, Logging, and Recovery}
+\begin{itemize}
+    \item \textbf{User Input Validation:} When an administrator fills out a form and forgets a
+    required field or enters invalid data, the form will not submit. Validation messages will
+    appear on both the client-side and the server-side before any data is sent to the database.
+    \item \textbf{Diagnostic Logging:} The exception handling mechanism will log the full
+    exception details, including the error message, stack trace, and the time it occurred, to
+    a text file on the server.
+    \item \textbf{Unexpected System Errors:} The backend will use global exception handling.
+    If an unhandled exception occurs, it will be caught, logged, and the user will be
+    redirected to a static error page.
+\end{itemize}
+
+\subsection{Data Storage and Persistence Strategy}
+MS SQL Server is the canonical data store. Critical operations execute via stored procedures.
+History tables (\texttt{TaskHistory}, \texttt{WorkflowLog}) retain past state for audit
+purposes.
+
+\subsection{Communication Mechanisms and Security}
+All communication between the administrator's web browser and the application's web server
+will be secured using HTTPS/TLS. The backend will enforce authorization for all actions by
+inspecting a URL query string parameter (\texttt{is\_admin=true}).
+
+\subsection{Memory Management and Performance Strategies}
+Controllers handle minimal processing. Heavy computation and transient data are processed in
+the service layer. Server-side pagination (OFFSET-FETCH) limits dataset size. Master data
+caching reduces database calls.
+
+\section{System Architecture}
+
+\subsection{Level 0 Data Flow Diagram (DFD)}
+The Level 0 DFD illustrates the application's context and its interaction with external
+components. The system is self-contained and only interacts directly with the QTC
+Administrator and the existing Workflow Database.
+
+The administrator sends HTTP Requests (UI Interaction) to the WFQ Administrator Application
+(New), which in turn sends T-SQL / EF Core Queries to the Workflow Database (Existing). The
+database returns SQL Results / Datasets to the application, which returns HTTP Responses
+(Rendered HTML) to the administrator.
+
+\subsection{Level 1 Data Flow Diagram (DFD)}
+The Level 1 DFD decomposes the WFQ Administrator System into three distinct layers to ensure
+separation of concerns and maintainability:
+\begin{enumerate}
+    \item \textbf{Presentation Layer} --- ASP.NET Core MVC
+    \item \textbf{Business Logic Layer} --- Services
+    \item \textbf{Data Access Layer} --- Repositories
+\end{enumerate}
+
+\section{Policies and Tactics}
+
+\subsection{Specific Products Used}
+\begin{itemize}
+    \item \textbf{IDE:} Visual Studio 2022
+    \item \textbf{Web Framework:} ASP.NET Core 7.0 MVC
+    \item \textbf{Database:} Microsoft SQL Server
+    \item \textbf{Database Management:} SQL Server Management Studio (SSMS) 19
+    \item \textbf{Web Server:} Internet Information Services (IIS) 10.0
+    \item \textbf{Source Control:} Git, hosted on GitHub
+\end{itemize}
+
+\subsection{Plans for Ensuring Requirements Traceability}
+A Requirements Traceability Matrix (RTM) is maintained in Section 10 of this document. It
+maps every requirement from the Workflow Queue Administrator Requirements document to the
+specific design modules, lower-level components, and verification tests that implement and
+validate them.
+
+\subsection{Plans for Testing the Software}
+\begin{itemize}
+    \item \textbf{Unit Testing:} Tests that mock the Data Access Layer to verify all business
+    logic in isolation, without needing a database.
+    \item \textbf{End-to-End (E2E) Manual Testing:} The QA team will perform manual tests
+    based on the use cases and the RTM. This involves running the full application locally and
+    testing all user-facing functionality.
+\end{itemize}
+
+\subsection{Coding Guidelines and Conventions}
+For the duration of this project, the team will adhere to the Microsoft C\# Coding Conventions
+provided by the sponsor. This includes guidelines for naming, layout, commenting, and language
+usage.
+
+\subsection{Plans for Maintaining the Software}
+Providing accurate documentation, comments, and following coding conventions in order to make
+sure future developers have an easier time working on the application.
+
+\section{Detailed System Design}
+
+\subsection{Presentation Layer Module}
+
+\subsubsection{Responsibilities}
+\begin{itemize}
+    \item Render HTML and present data to the QTC Administrator in a user-friendly web
+    interface.
+    \item Capture user input from HTML forms, such as creating a new workflow or editing a
+    step.
+    \item Perform basic client-side validation (e.g., checking for required fields) for
+    immediate user feedback.
+    \item Invoke methods on the Business Logic Service Module to perform application-specific
+    operations. It does not contain any business logic itself.
+    \item Display system status, confirmations, and user-friendly error messages returned from
+    the service layer.
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item \textbf{Thin Controller:} The controllers within this module must contain minimal
+    logic. Their responsibility is strictly to manage the web request/response cycle. All
+    complex business logic must be delegated to the service layer.
+    \item \textbf{Branding:} The UI's appearance must adhere to the Leidos corporate branding
+    guidelines.
+    \item \textbf{Browser Compatibility:} The UI must be functional and render correctly on
+    the latest versions of modern web browsers (Chrome, Edge, Firefox).
+\end{itemize}
+
+\subsubsection{Composition}
+\begin{itemize}
+    \item \textbf{Workflow Dashboard Component:} Displays the main paginated and searchable
+    list of all workflows.
+    \item \textbf{Workflow Details Component:} Displays the steps, tasks, and history for a
+    single selected workflow.
+    \item \textbf{Create/Edit Modal Components:} Reusable dialog forms for creating and
+    editing workflows and steps.
+    \item \textbf{Confirmation Dialog Component:} A generic modal used to confirm destructive
+    actions like deleting a step.
+    \item \textbf{Notification/Toast Service:} A UI element for displaying non-blocking
+    success or error messages.
+\end{itemize}
+
+\subsection{Business Logic Service Module (BLL)}
+
+\subsubsection{Responsibilities}
+\begin{itemize}
+    \item To implement the application's use cases as defined in the requirements by
+    coordinating interactions between controllers, data-access components, and external
+    services.
+    \item To manage workflow-related operations such as validating requests, enforcing allowed
+    state transitions, and ensuring consistent updates to workflow steps, tasks, and related
+    records.
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item \textbf{Technology Agnostic:} This module must have no knowledge of the web layer
+    (HTTP). It should not reference \texttt{HttpContext} or any web-specific constructs.
+    \item \textbf{Testability:} The logic must be fully unit-testable without requiring a live
+    web server or database. Dependencies should be injectable to allow for mocking during
+    tests.
+\end{itemize}
+
+\subsection{Data Access Module (DAL)}
+
+\subsubsection{Responsibilities}
+\begin{itemize}
+    \item To encapsulate all database interaction logic.
+    \item To perform all CRUD (Create, Read, Update, Delete) operations against the WFQ
+    database.
+    \item To execute both direct queries (via Entity Framework) and stored procedures as
+    required.
+    \item To manage database connections and transactions to ensure data integrity.
+    \item To handle database-specific errors (e.g., foreign key violations, connection
+    timeouts) and translate them into exceptions that the service layer can understand.
+    \item To implement the concurrency checks using the VerCol (rowversion) column.
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item \textbf{Schema Conformance:} All operations must conform to the existing,
+    unchangeable schema of the WFQ database. The application cannot alter the database schema.
+    \item \textbf{No Business Logic:} This layer must not contain any business rules. Its only
+    concern is data persistence.
+\end{itemize}
+
+\subsection{Authorization Module}
+
+\subsubsection{Responsibilities}
+\begin{itemize}
+    \item To determine if the current user is an ``Admin.''
+    \item To provide a simple, reusable pass/fail mechanism that can be used to protect
+    controller actions in the Presentation Layer.
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item The authorization logic is limited to inspecting a query string parameter (e.g.,
+    \texttt{is\_admin=true}) provided in the initial URL. It does not perform lookups against
+    any external service.
+    \item This check must be performed at the beginning of the request pipeline, before any
+    business logic is executed.
+\end{itemize}
+
+\subsubsection{Interface/Exports}
+Exports a named ASP.NET Core authorization policy (\texttt{"IsAdmin"}) that can be applied to
+controllers or specific controller actions using the standard attribute:
+\texttt{[Authorize(Policy = "IsAdmin")]}
+
+% ─────────────────────────────────────────────
+% SNAPSHOT 2 ADDITION
+% ─────────────────────────────────────────────
+\subsection{Notification Service Module (Snapshot 2)}
+\textit{Added by CS3338 Course Team --- Snapshot 2.}
+
+\subsubsection{Responsibilities}
+\begin{itemize}
+    \item To compose and send email notifications to relevant users when key workflow events
+    occur (task assigned, task completed, step created).
+    \item To operate asynchronously so that notification sending does not block or delay the
+    user's primary action.
+    \item To log any notification failures without interrupting normal application operation.
+    \item To read SMTP configuration from \texttt{appsettings.json} and respect the
+    \texttt{Notifications:Enabled} feature flag.
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item \textbf{Asynchronous Only:} All email sending must be performed using
+    \texttt{async/await} patterns. Synchronous SMTP calls are not permitted.
+    \item \textbf{No Credentials in Source Control:} SMTP credentials must be supplied via
+    environment variables or a secrets manager and must never be committed to the repository.
+    \item \textbf{Testability:} The service must implement \texttt{INotificationService} so
+    it can be mocked in unit tests without requiring a live SMTP server.
+    \item \textbf{Failure Isolation:} A failure in the notification service must not cause
+    the parent operation (e.g., task assignment) to fail or roll back.
+\end{itemize}
+
+\subsubsection{Composition}
+\begin{itemize}
+    \item \texttt{INotificationService} --- Interface defining the contract for all
+    notification operations.
+    \item \texttt{EmailNotificationService} --- Concrete implementation using the
+    \textbf{MailKit} NuGet library to send SMTP email.
+    \item \texttt{NotificationSettings} --- A configuration POCO bound to the
+    \texttt{Notifications} section of \texttt{appsettings.json}.
+    \item Email templates (plain-text strings) for each event type:
+    \begin{itemize}
+        \item Task Assigned / Reassigned
+        \item Task Completed
+        \item Workflow Step Created
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Interface Description}
+\begin{verbatim}
+public interface INotificationService
+{
+    Task SendTaskAssignedAsync(string toEmail, string taskName,
+                               string workflowName, string stepName,
+                               string appBaseUrl);
+
+    Task SendTaskCompletedAsync(string toEmail, string taskName,
+                                string workflowName, string appBaseUrl);
+
+    Task SendStepCreatedAsync(string toEmail, string stepName,
+                              string workflowName, string appBaseUrl);
+}
+\end{verbatim}
+
+\subsubsection{Uses/Interactions}
+\begin{itemize}
+    \item \textbf{Used By:} \texttt{WorkflowAdminService} (Business Logic Layer, Section
+    6.2) --- calls notification methods after successful task assignment, task completion,
+    and step creation operations.
+    \item \textbf{Uses:} \textbf{MailKit} library for SMTP communication. Reads
+    configuration from \texttt{IOptions<NotificationSettings>}.
+\end{itemize}
+
+\subsubsection{Configuration}
+The following settings are added to \texttt{appsettings.json}:
+\begin{verbatim}
+"Notifications": {
+  "Enabled": true,
+  "SmtpHost": "smtp.example.com",
+  "SmtpPort": 587,
+  "SenderAddress": "wfq-admin@example.com",
+  "SenderName": "WFQ Administrator"
+}
+\end{verbatim}
+SMTP username and password are supplied via environment variables
+(\texttt{SMTP\_USERNAME}, \texttt{SMTP\_PASSWORD}) and are never stored in
+\texttt{appsettings.json}.
+
+\subsubsection{New Dependency}
+\begin{itemize}
+    \item \textbf{MailKit} (NuGet, pinned version) --- A cross-platform .NET library for
+    composing and sending email via SMTP. Selected over \texttt{System.Net.Mail} for its
+    superior async support, testability, and active maintenance.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+% SNAPSHOT 3 ADDITION
+% ─────────────────────────────────────────────
+\subsection{Export Service Module (Snapshot 3)}
+\textit{Added by CS3338 Course Team --- Snapshot 3.}
+
+\subsubsection{Responsibilities}
+\begin{itemize}
+    \item To generate a formatted PDF report of a workflow's full details (steps and tasks)
+    on demand.
+    \item To generate a flat CSV file of a workflow's task list on demand.
+    \item To return the generated file as a byte array or stream to the controller layer for
+    delivery as a file download response.
+    \item To operate as a strictly read-only service --- no database writes are performed.
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item \textbf{Read-Only:} This service must not perform any write, update, or delete
+    operations against the database.
+    \item \textbf{Testability:} The service must implement \texttt{IExportService} so it
+    can be mocked in unit tests without requiring a live database or file system.
+    \item \textbf{No Client-Side Generation:} All file generation must occur server-side.
+    No JavaScript-based PDF or CSV libraries are permitted.
+    \item \textbf{Authorization:} Export endpoints must be protected by the same
+    \texttt{[Authorize(Policy = "IsAdmin")]} attribute as all other controller actions.
+\end{itemize}
+
+\subsubsection{Composition}
+\begin{itemize}
+    \item \texttt{IExportService} --- Interface defining the contract for PDF and CSV
+    export operations.
+    \item \texttt{WorkflowExportService} --- Concrete implementation using \textbf{QuestPDF}
+    for PDF generation and \texttt{StringBuilder} for CSV generation.
+    \item PDF layout components (defined inline using QuestPDF's fluent API):
+    \begin{itemize}
+        \item Workflow header section (name, description, status, created date)
+        \item Steps table (StepNumber, StepName, Description)
+        \item Tasks table (AssignedTo, Status, Step)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Interface Description}
+\begin{verbatim}
+public interface IExportService
+{
+    Task<byte[]> GenerateWorkflowPdfAsync(int workflowId);
+    Task<string> GenerateWorkflowCsvAsync(int workflowId);
+}
+\end{verbatim}
+
+\subsubsection{Controller Integration}
+Two new action methods are added to \texttt{WorkflowsController}:
+\begin{verbatim}
+[HttpGet]
+public async Task<IActionResult> ExportPdf(int workflowId);
+
+[HttpGet]
+public async Task<IActionResult> ExportCsv(int workflowId);
+\end{verbatim}
+Both actions call the \texttt{IExportService}, then return a
+\texttt{FileContentResult} with the appropriate MIME type
+(\texttt{application/pdf} or \texttt{text/csv}) and a
+\texttt{Content-Disposition: attachment} header to trigger a browser download.
+
+\subsubsection{Uses/Interactions}
+\begin{itemize}
+    \item \textbf{Used By:} \texttt{WorkflowsController} (Presentation Layer, Section 6.1)
+    --- calls export methods in response to GET requests from the Workflow Details page.
+    \item \textbf{Uses:} Data Access Module (Section 6.3) to retrieve workflow, step, and
+    task data. \textbf{QuestPDF} library for PDF rendering.
+\end{itemize}
+
+\subsubsection{New Dependencies}
+\begin{itemize}
+    \item \textbf{QuestPDF} (NuGet, pinned version) --- A modern, fluent .NET library for
+    server-side PDF generation. Selected for its clean API, no external runtime dependencies,
+    and active maintenance.
+    \item \textbf{No additional packages for CSV} --- CSV generation uses built-in
+    \texttt{System.Text} and \texttt{StringBuilder} to avoid unnecessary dependencies.
+\end{itemize}
+
+\section{Database Design}
+
+\subsection{Overview}
+The QTC Workflow Queue (WFQ) database is an existing Microsoft SQL Server relational data
+store. It supports workflow configuration, task processing, and audit logging. The (New) WFQ
+Administrator Application interacts with this database through direct data-level access. The
+schema, tables, and stored procedures are part of the existing system and will not be modified
+by this project.
+
+\subsection{Table Descriptions}
+\begin{enumerate}
+    \item \textbf{Task} --- Stores individual tasks created within workflows, including
+    assignment, status, and timestamps.
+    \item \textbf{Workflow} --- Defines an entire workflow consisting of ordered steps.
+    \item \textbf{WorkflowStep} --- Represents a step within a workflow. Each step contains
+    ordering information and relationships to tasks.
+    \item \textbf{Status} --- Defines valid status values used by tasks.
+    \item \textbf{Item} --- Represents the business object or record being processed through
+    workflows.
+    \item \textbf{ItemStatus} --- Tracks the current status of an Item.
+    \item \textbf{InfoKey} --- Stores metadata key definitions for dynamic item attributes.
+    \item \textbf{ItemKeyValue} --- Stores key-value pairs linked to items, providing
+    extensible metadata support.
+\end{enumerate}
+
+\subsection{Relationships Summary}
+\begin{itemize}
+    \item \textbf{Workflow $\rightarrow$ WorkflowStep:} One-to-Many. Each workflow contains
+    multiple ordered steps.
+    \item \textbf{WorkflowStep $\rightarrow$ Task:} One-to-Many. Each step may contain
+    multiple tasks.
+    \item \textbf{Item $\rightarrow$ Task:} One-to-Many. A single item may have multiple tasks
+    across steps.
+    \item \textbf{Status $\rightarrow$ Task:} One-to-Many. Each task has a single status
+    value.
+    \item \textbf{Item $\rightarrow$ ItemKeyValue $\rightarrow$ InfoKey:} Supports flexible,
+    schema-independent metadata storage.
+\end{itemize}
+
+\subsection{Design Rationale}
+\begin{itemize}
+    \item \textbf{Normalization:} The schema is normalized (3NF) to reduce redundancy and
+    maintain data consistency.
+    \item \textbf{Auditability:} Many tables include CreatedBy, CreatedDate, UpdatedBy, and
+    UpdatedDate fields for audit and compliance.
+    \item \textbf{Extensibility:} The InfoKey and ItemKeyValue tables provide a mechanism for
+    storing additional data without requiring schema changes.
+    \item \textbf{Performance:} Frequently used fields (e.g., Id, WorkflowStepId, StatusId)
+    are indexed to support efficient querying.
+\end{itemize}
+
+\section{User Interface}
+
+\subsection{Overview of User Interface}
+The user interface (UI) is the primary means by which administrators will interact with the
+WFQ system to manage and monitor workflows. The design prioritizes clarity, efficiency, and
+consistency with the Leidos corporate branding. The UI is implemented as a web-based
+application that interacts with the backend.
+
+From the user's perspective, the WFQ application provides:
+\begin{itemize}
+    \item \textbf{Dashboard / Workflow List:} Displays all workflows a user has access to,
+    with sortable columns for Name, Status, Created Date, and actions (Edit/View Steps).
+    \item \textbf{Workflow Step View:} Shows all steps associated with a selected workflow,
+    including StepNumber, StepName, and Actions (Edit/Delete).
+    \item \textbf{Task Management Page:} Displays tasks assigned to users, with details like
+    AssignedTo, Status, Step, and Actions (Complete Task / Reassign).
+    \item \textbf{Search \& Filter Controls:} Provides a search bar and filtering options for
+    workflows and tasks.
+    \item \textbf{Admin Interface:} Allows admins to create/update workflows, steps, and
+    tasks.
+\end{itemize}
+
+\subsection{User Interface Flow Model}
+
+\textbf{Use Case 1: Creating a New Workflow}
+\begin{enumerate}
+    \item The administrator navigates to the Workflow Management Dashboard.
+    \item The user clicks the ``+ Create New Workflow'' button.
+    \item A modal dialog appears, presenting a form with fields for ``Name'' and
+    ``Description''.
+    \item The user enters the required information and clicks ``Save''.
+    \item The UI submits an HTML form to the \texttt{/Workflows/Create} controller action.
+    \item Upon a successful response, the modal closes and the workflow list refreshes.
+\end{enumerate}
+
+\textbf{Use Case 2: Editing the Steps of an Existing Workflow}
+\begin{enumerate}
+    \item From the Dashboard, the administrator locates the desired workflow.
+    \item The user clicks the ``View'' (eye) icon in the ``Actions'' column.
+    \item The UI navigates to a ``Workflow Details'' page displaying the list of steps.
+    \item To edit a step, the user clicks the ``Edit'' (pencil) icon next to the desired step.
+    \item A modal dialog appears, pre-populated with the current data for that step.
+    \item The user modifies the data and clicks ``Save''.
+    \item The UI submits an HTML form to the \texttt{/Workflows/EditStep} controller action.
+    \item On success, the modal closes and the list of steps refreshes.
+\end{enumerate}
+
+\textbf{Use Case 3: Deleting a Workflow Step}
+\begin{enumerate}
+    \item From the ``Workflow Details'' page, the administrator clicks the ``Delete'' icon.
+    \item A confirmation dialog appears: ``Are you sure you want to delete this step?''
+    \item The user clicks ``Confirm''.
+    \item The UI submits an HTML form to the \texttt{/Workflows/DeleteStep} controller action.
+    \item The backend service executes the required business logic (checking for dependent
+    tasks, reassigning if necessary) before deleting the record.
+    \item On success, the list of steps refreshes and the deleted step is removed from the
+    view.
+\end{enumerate}
+
+\section{Glossary}
+\begin{itemize}
+    \item \textbf{DB} -- Database
+    \item \textbf{WFQ} -- Workflow Queue
+    \item \textbf{GUI} -- Graphical User Interface
+    \item \textbf{PHI} -- Protected Health Information
+    \item \textbf{PII} -- Personal Identifiable Information
+    \item \textbf{HITECH} -- Health Information Technology for Economic and Clinical Health Act
+    \item \textbf{HIPAA} -- Health Insurance Portability and Accountability Act
+    \item \textbf{RBAC} -- Role Based Access Control
+    \item \textbf{API} -- Application Programming Interface
+    \item \textbf{ADM} -- Administrator Requirement
+    \item \textbf{SMTP} -- Simple Mail Transfer Protocol
+\end{itemize}
+
+\section{References}
+
+\subsection{Internal Project Documents}
+\begin{itemize}
+    \item R1. Workflow Queue (WFQ) --- Software Requirements Specification (SRS); Authors:
+    Project Team; Version: 1.2; Date: 10/23/2025.
+    \item R2. Workflow Queue Administrator Requirements; Authors: Sponsor/Project Team;
+    Version: 1.0; Date: 10/8/2025.
+\end{itemize}
+
+\subsection{Regulatory and Policy References}
+\begin{itemize}
+    \item R3. U.S. HHS --- Summary of the HIPAA Privacy Rule. \url{https://www.hhs.gov/hipaa/for-professionals/privacy/laws-regulations/index.html}
+    \item R4. U.S. HHS --- Summary of the HIPAA Security Rule. \url{https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html}
+    \item R5. U.S. HHS --- HITECH Act Enforcement Interim Final Rule. \url{https://www.hhs.gov/hipaa/for-professionals/special-topics/hitech-act-enforcement-interim-final-rule/index.html}
+\end{itemize}
+
+\subsection{Protocols and Data Formats}
+\begin{itemize}
+    \item R6. IETF --- The Transport Layer Security (TLS) Protocol Version 1.3, RFC 8446. \url{https://datatracker.ietf.org/doc/html/rfc8446}
+    \item R7. IETF --- The JavaScript Object Notation (JSON) Data Interchange Format, RFC 8259. \url{https://www.rfc-editor.org/info/rfc8259}
+\end{itemize}
+
+\end{document}
