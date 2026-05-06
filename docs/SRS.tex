@@ -1,0 +1,732 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{parskip}
+
+\title{Software Requirements Specification\\
+\large QTC Workflow Queue (WFQ)}
+\author{Original Authors: Dylan Huang, Laila Velasquez, Samuel Acevedo, Haik Oganesyan,\\
+Ruben Flores, Slok Patel, Edwin Rojas, Jesus Ojeda, Alexander Diaz, Zhen Zhao\\[0.5em]
+\textit{Adapted to \LaTeX{} by CS3338 Course Team}}
+\date{Version 1.3 \\ Originally: October 17, 2025 \\ Adapted: \today}
+
+\begin{document}
+
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────
+\section*{Revision History}
+% ─────────────────────────────────────────────
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Name & Date & Reason For Changes & Version \\
+\midrule
+All group members  & 10/17/2025 & Initial Document                          & 1.0 \\
+Slok Patel         & 10/17/2025 & Section 1 and 2 introduction              & 1.1 \\
+Zhen Zhao          & 10/22/2025 & Section 4 Requirement Specifications      & 1.2 \\
+Edwin Rojas        & 10/23/2025 & Section 3 External Interface Requirements & 1.2 \\
+Slok Patel         & 10/23/2025 & Section 4, 5, \& Appendix (ABC)          & 1.2 \\
+Dylan Huang        & 10/23/2025 & Section 6 Legal and Ethical Considerations & 1.2 \\
+Laila Velasquez    & 10/23/2025 & Table of Contents                         & 1.2 \\
+Edwin Rojas        & 11/4/2025  & Section 1, 2, and 3 Revisions            & 1.3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\newpage
+
+% ─────────────────────────────────────────────
+\section{Introduction}
+% ─────────────────────────────────────────────
+
+\subsection{Purpose}
+The purpose of this Software Requirements Specification (SRS) document is to define the
+functional and nonfunctional requirements for the Workflow Queue (WFQ) Administrator
+Application. This document specifies what the software will do and the conditions under which
+it will operate. It serves as a guide for developers, testers, and stakeholders by clearly
+outlining the system's intended features and behaviors.
+
+The WFQ application will be developed using ASP.NET MVC with C\#, Entity Framework, and
+stored procedures, with both SQL Server and Oracle serving as supported backends. This SRS
+focuses on Version 1.0 of the new Administrator Application, which will be developed using
+ASP.NET MVC with C\# and Entity Framework. Its sole backend interaction will be with the
+existing QTC-provided SQL Server database. This document provides the foundation for the
+design and implementation activities described in the Software Design Document (SDD).
+
+\subsection{Intended Audience and Reading Suggestions}
+This document is intended for a variety of audiences involved in the project lifecycle:
+
+\begin{itemize}
+    \item \textbf{Project Sponsor (Leidos QTC):} Can use this document to verify that the
+    planned application meets their specified needs and to understand the project's scope and
+    boundaries.
+    \item \textbf{Developers:} Should focus on the detailed functional and non-functional
+    requirements in Sections 4 and 5 to guide implementation.
+    \item \textbf{QA Testers:} Should use the requirements in Section 4 as a basis for writing
+    test cases and defining acceptance criteria.
+    \item \textbf{Project Managers:} Can use the overall product description and defined scope
+    to manage project execution and stakeholder expectations.
+\end{itemize}
+
+\subsection{Product Scope}
+The WFQ Administrator Application is a new, web-based tool designed for authorized technical
+administrators to create, configure, and manage the workflows used by the main QTC WFQ
+system. The application will achieve this by directly reading from and writing to the existing
+WFQ SQL Server database.
+
+The core purpose of this application is to provide a user-friendly graphical interface for
+managing the underlying data that defines the workflow engine's behavior. The initial release
+will focus on providing full administrative control over workflows and their associated steps.
+
+\textbf{IN SCOPE:}
+\begin{itemize}
+    \item Designing, building, and delivering a new, standalone Administrator web application.
+    \item Creating a data access layer within the new application that communicates directly
+    with the existing WFQ SQL Server database.
+    \item Implementing all administrative features as specified in the ``Workflow Queue
+    Administrator Requirements'' document.
+    \item Implementing role-based access control within the new application based on a URL
+    query string parameter.
+\end{itemize}
+
+\textbf{OUT OF SCOPE:}
+\begin{itemize}
+    \item Accessing, modifying, or using any source code from the existing live WFQ
+    application.
+    \item Calling, updating, or interacting with any pre-existing backend REST API.
+    \item Building or modifying the existing WFQ User \& Manager interface.
+    \item Integrating with external third-party services or creating advanced analytics
+    dashboards.
+\end{itemize}
+
+\subsection{Definitions, Acronyms, and Abbreviations}
+\begin{itemize}
+    \item \textbf{WFQ} -- Workflow Queue
+    \item \textbf{ASP.NET MVC} -- A Model-View-Controller framework for web applications
+    using Microsoft's .NET platform
+    \item \textbf{C\#} -- Programming language used for the system's logic and business layer
+    \item \textbf{SQL Server / Oracle} -- Database management systems used for backend storage
+    \item \textbf{Entity Framework (EF)} -- An object-relational mapping (ORM) framework used
+    for data operations
+    \item \textbf{QA} -- Quality Assurance
+    \item \textbf{PO} -- Product Owner
+    \item \textbf{SRS} -- Software Requirements Specification
+    \item \textbf{SDD} -- Software Design Document
+\end{itemize}
+
+\subsection{References}
+\begin{itemize}
+    \item Microsoft. ``C\# Coding Conventions.'' \url{https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions}
+    \item Microsoft Learn. ``Build Web APIs with ASP.NET Core.'' \url{https://learn.microsoft.com/en-us/training/modules/build-web-api-aspnet-core/}
+    \item Microsoft Learn. ``Install SQL Server Management Studio (SSMS).'' \url{https://learn.microsoft.com/en-us/ssms/install/install}
+    \item Oracle. ``SQL Developer Download.'' \url{https://www.oracle.com/database/sqldeveloper/technologies/download/}
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Overall Description}
+% ─────────────────────────────────────────────
+
+The WFQ (Workflow Queue) application provides a centralized platform for automating and
+managing multi-step workflows across organizational departments. Its purpose is to replace
+inefficient manual processes and disconnected tools with a cohesive system that improves
+coordination, reduces delays, and enhances visibility.
+
+\subsection{System Analysis}
+The WFQ system is designed to solve the problem of inefficient and fragmented workflow
+management. Many organizations currently use manual methods or isolated applications for
+approvals, which often result in miscommunication, data loss, and process delays. The WFQ
+application automates these processes by enabling users to create, track, and complete
+workflows through a unified interface.
+
+The main goals of the system include increasing process transparency, reducing approval times,
+and ensuring accountability at every step. Key technical challenges involve maintaining data
+integrity between SQL Server and Oracle databases and implementing secure, role-based
+authentication.
+
+\subsection{Product Perspective}
+The WFQ Administrator Application is a new, self-contained, internal web tool. It is not an
+enhancement to the existing WFQ application but rather a separate, complementary system that
+shares a common database.
+
+Its position within the QTC ecosystem is that of a ``back-office'' or ``control panel'' tool.
+While the primary WFQ application is used by front-line staff to execute work, this new
+Administrator Application will be used by technical staff to define and manage the structure
+of that work.
+
+\subsection{Product Functions}
+The primary functions of the WFQ Administrator Application include:
+\begin{itemize}
+    \item \textbf{Workflow Creation and Configuration:} Allows authorized administrators to
+    define new workflows.
+    \item \textbf{Workflow Step Management:} Allows administrators to add, edit, and delete
+    the individual steps that constitute a workflow, including their sequence and properties.
+    \item \textbf{Task Oversight:} Provides administrators with the ability to view tasks
+    within a workflow and perform limited management functions, such as reassigning or
+    completing a task.
+    \item \textbf{History and Auditing:} Displays a history of tasks and changes within a
+    workflow to support troubleshooting and oversight.
+\end{itemize}
+
+\subsection{User Classes and Characteristics}
+The WFQ system will be used by multiple user groups with different roles and privileges:
+\begin{itemize}
+    \item \textbf{Administrators:} Manage user accounts, permissions, and system
+    configurations. They are responsible for defining workflow templates and monitoring
+    overall system health.
+    \item \textbf{Managers / Approvers:} Review and approve workflow items. They have access
+    to reporting tools and can delegate or escalate tasks when necessary.
+    \item \textbf{Regular Users / Submitters:} Initiate workflows, upload relevant documents,
+    and monitor the progress of their requests.
+    \item \textbf{QA Testers:} Test application features and ensure compliance with
+    functionality, performance, and security standards.
+    \item \textbf{Developers:} Maintain and enhance the system, ensuring compatibility across
+    environments.
+\end{itemize}
+
+\subsection{Operating Environment}
+The WFQ application will operate in a web-based environment using the following components:
+\begin{itemize}
+    \item \textbf{Frontend:} Developed with ASP.NET MVC for the UI layer, compatible with
+    modern browsers (Chrome, Edge, Firefox).
+    \item \textbf{Backend:} Built in C\# with Entity Framework, handling data access logic.
+    \item \textbf{Databases:} Microsoft SQL Server and Oracle Database for backend storage and
+    stored procedure execution.
+    \item \textbf{Operating System:} Hosted on Windows Server with support for Internet
+    Information Services (IIS).
+    \item \textbf{Development Tools:} Visual Studio, SQL Server Management Studio (SSMS), and
+    Oracle SQL Developer.
+\end{itemize}
+
+\subsection{Design and Implementation Constraints}
+\begin{itemize}
+    \item \textbf{Direct Database Access Only:} The application must not attempt to interface
+    with the existing WFQ application at the code or API level. All interactions must occur
+    via direct queries and commands to the SQL Server database.
+    \item \textbf{Technology Stack:} The project is constrained to the existing technology
+    stack (C\#, ASP.NET, MS SQL Server) to ensure maintainability and consistency.
+    \item \textbf{Security \& Compliance (HIPAA):} The application will be handling data that
+    is subject to HIPAA regulations. All access must be strictly controlled, and all
+    administrative actions that modify data must be auditable.
+    \item \textbf{Authorization Model:} The application must rely solely on a URL query string
+    parameter for determining user authorization. It will not integrate with a separate
+    authentication service API.
+\end{itemize}
+
+\subsection{User Documentation}
+Upon completion, the WFQ application will include:
+\begin{itemize}
+    \item \textbf{User Manual:} Provides step-by-step guidance for creating, managing, and
+    approving workflows.
+    \item \textbf{Online Help Guides:} Integrated help documentation within the application's
+    UI.
+    \item \textbf{Developer Documentation:} Includes database schema details and setup
+    instructions.
+    \item \textbf{Training Materials:} Optional tutorial videos or PDF guides.
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item \textbf{Stable Database Schema:} The schema of the existing WFQ database is stable
+    and will not undergo significant changes during the project lifecycle.
+    \item \textbf{Database Accessibility:} The development team will be provided with network
+    access and credentials to a development/testing instance of the WFQ database.
+    \item \textbf{Sponsor-Provided Authorization:} The hosting environment will provide a
+    reliable and secure mechanism for passing the user's administrative status via the URL
+    query string.
+    \item \textbf{Team Skillset:} The team possesses, or can acquire, the necessary skills in
+    C\#, ASP.NET MVC, and SQL to complete the project.
+\end{itemize}
+
+\subsection{Apportioning of Requirements}
+Certain advanced features may be reserved for future versions, including:
+\begin{itemize}
+    \item Integration with third-party APIs for document signing.
+    \item Advanced analytics dashboards using Power BI.
+    \item Mobile version of the WFQ system for iOS and Android platforms.
+    \item Support for multilingual UI and accessibility enhancements.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+% SNAPSHOT 2 ADDITION
+% ─────────────────────────────────────────────
+\subsection{Snapshot 2 Addition: Email Notification System}
+\textit{Added by CS3338 Course Team --- Snapshot 2.}
+
+The Email Notification System is a new feature added in Snapshot 2. It extends the existing
+WFQ Administrator Application with automated email alerts that notify relevant users when
+key workflow events occur. This feature was originally identified in Section 2.9 of this
+document as a planned future addition and is now being formally specified.
+
+\subsubsection{Purpose}
+To improve workflow visibility and reduce manual follow-up by automatically notifying
+assigned users and administrators when tasks are assigned, reassigned, or completed, and
+when new workflow steps are created.
+
+\subsubsection{Functional Requirements --- Notification Triggers}
+\begin{itemize}
+    \item \textbf{NFR-1:} The system shall send an email notification to the assigned user
+    when a task is assigned or reassigned to them.
+    \item \textbf{NFR-2:} The system shall send an email notification to the workflow
+    administrator when a task is marked as completed.
+    \item \textbf{NFR-3:} The system shall send an email notification to the workflow
+    administrator when a new workflow step is created within a workflow they manage.
+    \item \textbf{NFR-4:} The system shall not send a notification for read-only operations
+    (e.g., viewing a workflow or step).
+    \item \textbf{NFR-5:} If a notification fails to send (e.g., SMTP error), the system
+    shall log the failure and continue normal operation without interrupting the user's
+    workflow action.
+\end{itemize}
+
+\subsubsection{Functional Requirements --- Email Content}
+\begin{itemize}
+    \item \textbf{NFR-6:} Each notification email shall include: the event type, the
+    workflow name, the step name (if applicable), the task details (if applicable), and a
+    direct URL link to the relevant workflow in the application.
+    \item \textbf{NFR-7:} Emails shall be sent from a configured sender address defined in
+    the application's server-side configuration (\texttt{appsettings.json}).
+    \item \textbf{NFR-8:} Email subjects shall clearly identify the event type (e.g.,
+    ``[WFQ] Task Assigned: \{TaskName\}'').
+\end{itemize}
+
+\subsubsection{Functional Requirements --- Configuration}
+\begin{itemize}
+    \item \textbf{NFR-9:} SMTP host, port, sender address, and credentials shall be
+    configurable via \texttt{appsettings.json} and shall not be hardcoded.
+    \item \textbf{NFR-10:} SMTP credentials shall not be committed to source control.
+    They shall be managed via environment variables or a secrets manager.
+    \item \textbf{NFR-11:} The notification feature shall be toggleable via a configuration
+    flag (\texttt{Notifications:Enabled: true/false}) to allow disabling in development or
+    testing environments.
+\end{itemize}
+
+\subsubsection{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{NFR-12:} Notification sending shall be performed asynchronously and must
+    not block or delay the user's primary action (e.g., task assignment).
+    \item \textbf{NFR-13:} The notification service shall be fully unit-testable via
+    dependency injection and interface mocking.
+\end{itemize}
+
+\subsubsection{New Dependencies}
+\begin{itemize}
+    \item \textbf{MailKit} (NuGet, pinned version) --- cross-platform .NET SMTP library
+    used for composing and sending email notifications.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+% SNAPSHOT 3 ADDITION
+% ─────────────────────────────────────────────
+\subsection{Snapshot 3 Addition: Workflow Export / Report Generation}
+\textit{Added by CS3338 Course Team --- Snapshot 3.}
+
+The Workflow Export and Report Generation feature allows administrators to download a
+workflow's full details as a PDF or CSV file directly from the Workflow Details page. This
+is a new feature not present in the original project.
+
+\subsubsection{Purpose}
+To give administrators a portable, shareable record of a workflow's current state ---
+including its steps, tasks, and metadata --- without requiring direct database access or
+manual data collection.
+
+\subsubsection{Functional Requirements --- PDF Export}
+\begin{itemize}
+    \item \textbf{EXP-1:} The system shall allow an admin to export a workflow as a
+    formatted PDF file from the Workflow Details page.
+    \item \textbf{EXP-2:} The PDF shall include: workflow name, description, status,
+    created date, a table of all steps (StepNumber, StepName, Description), and a table
+    of all tasks (AssignedTo, Status, Step).
+    \item \textbf{EXP-3:} The PDF file shall be named
+    \texttt{\{WorkflowName\}\_Report\_\{Date\}.pdf}.
+    \item \textbf{EXP-4:} The PDF shall be generated server-side and delivered as a
+    file download response. The user shall not be navigated away from the Workflow Details
+    page.
+    \item \textbf{EXP-5:} The PDF shall be readable and correctly formatted on standard
+    PDF viewers (Adobe Acrobat, browser PDF viewer).
+\end{itemize}
+
+\subsubsection{Functional Requirements --- CSV Export}
+\begin{itemize}
+    \item \textbf{EXP-6:} The system shall allow an admin to export a workflow's task list
+    as a CSV file from the Workflow Details page.
+    \item \textbf{EXP-7:} The CSV shall include the following columns:
+    WorkflowName, StepName, StepNumber, TaskID, AssignedTo, Status, StartDate,
+    CompletionDate.
+    \item \textbf{EXP-8:} The CSV file shall be named
+    \texttt{\{WorkflowName\}\_Tasks\_\{Date\}.csv}.
+    \item \textbf{EXP-9:} The CSV shall use UTF-8 encoding and standard comma-delimited
+    format compatible with Microsoft Excel and Google Sheets.
+    \item \textbf{EXP-10:} The CSV shall be delivered as a file download response without
+    navigating away from the Workflow Details page.
+\end{itemize}
+
+\subsubsection{Functional Requirements --- General}
+\begin{itemize}
+    \item \textbf{EXP-11:} Export actions shall require the same admin authorization as
+    all other actions in the application (\texttt{[Authorize(Policy = "IsAdmin")]}).
+    \item \textbf{EXP-12:} If a workflow has no steps or no tasks, the export shall still
+    succeed and the relevant sections shall display ``No data available.''
+    \item \textbf{EXP-13:} Export operations shall not modify any data in the database.
+    They are strictly read-only operations.
+\end{itemize}
+
+\subsubsection{Non-Functional Requirements}
+\begin{itemize}
+    \item \textbf{EXP-14:} PDF and CSV generation shall complete within 3 seconds for
+    workflows with up to 100 steps and 500 tasks under normal server load.
+    \item \textbf{EXP-15:} The export service shall be fully unit-testable via dependency
+    injection and interface mocking.
+\end{itemize}
+
+\subsubsection{New Dependencies}
+\begin{itemize}
+    \item \textbf{QuestPDF} (NuGet, pinned version) --- a modern .NET library for
+    server-side PDF generation. Used for PDF export functionality.
+    \item \textbf{No additional packages for CSV} --- CSV generation uses built-in
+    \texttt{System.Text} and \texttt{StringBuilder} classes.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{External Interface Requirements}
+% ─────────────────────────────────────────────
+
+\subsection{User Interfaces}
+The system will present a single, new web-based user interface — the \textbf{Administrator UI}.
+This is a new, dedicated web application built from scratch for technical administrators to
+manage the workflow system. It will provide all functionality specified in the ``Workflow Queue
+Administrator Requirements'' document, including the ability to create, edit, and view
+workflows and their steps.
+
+\textbf{GUI and Style Standards:}
+\begin{itemize}
+    \item \textbf{Branding:} All UIs must adhere to the Leidos corporate branding guidelines,
+    including the official color palette and logos.
+    \item \textbf{Layout:} Screen layouts will be standardized. Standard functions (e.g.,
+    search, create, edit) will be presented consistently.
+    \item \textbf{Error Display:} The system will display user-friendly error messages for
+    invalid inputs or exceptions.
+    \item \textbf{Accessibility:} The UI design should consider conformance with Section 508
+    compliance rules.
+\end{itemize}
+
+\subsection{Hardware Interfaces}
+The WFQ Administrator Application is a software-only system. It does not interface directly
+with any custom or specialized hardware. All operations are handled through standard user
+input devices (keyboard, mouse).
+
+\subsection{Software Interfaces}
+The system has one primary external software interface: the \textbf{Microsoft SQL Server
+Database}. This is the existing, persistent data store for the live QTC WFQ system and is the
+single source of truth for all workflow, step, and task data. Data access will be managed via
+Entity Framework and by executing existing stored procedures where applicable.
+
+\subsection{Communications Interfaces}
+\begin{itemize}
+    \item \textbf{Protocol:} All communication between the administrator's web browser and the
+    application's web server (IIS) shall be conducted securely over HTTPS/TLS.
+    \item \textbf{Authentication:} User authentication is assumed to be handled by the hosting
+    environment prior to the user accessing the application's URL. The application itself does
+    not manage user logins or passwords.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Requirements Specification}
+% ─────────────────────────────────────────────
+
+\subsection{Functional Requirements}
+
+\subsubsection{Authentication and Authorization}
+\begin{itemize}
+    \item 4.1.1.1 The system shall require all users to authenticate before accessing the
+    Workflow Queue Administrator interface.
+    \item 4.1.1.2 The system shall verify the user's authorization level upon authentication.
+    \item 4.1.1.3 The system shall restrict access to users with the ``Admin'' role.
+    \item 4.1.1.4 The system shall deny access to users who do not have admin privileges,
+    displaying an ``Access Denied'' message.
+    \item 4.1.1.5 The system shall validate an admin authorization flag via the query string
+    before granting access.
+\end{itemize}
+
+\subsubsection{Workflow Management}
+
+\textbf{Workflow Display}
+\begin{itemize}
+    \item 4.2.1.1 The system shall display a paginated list of all existing workflows.
+    \item 4.2.1.2 Each workflow entry shall display: Name, Description, Status (New, In
+    Progress, Completed), and Actions (Edit, View Steps).
+    \item 4.2.1.3 The system shall allow admins to search or filter workflows by Name.
+    \item 4.2.1.4 The system shall allow sorting by Name and CreatedDate.
+\end{itemize}
+
+\textbf{Workflow Creation}
+\begin{itemize}
+    \item 4.2.2.1 The system shall allow an admin to create a new workflow.
+    \item 4.2.2.2 The creation form shall include Name (required, unique) and Description
+    (optional).
+    \item 4.2.2.3 The system shall enforce a maximum length for the Name field.
+    \item 4.2.2.4 The system shall validate that workflow names are unique.
+\end{itemize}
+
+\textbf{Workflow Update}
+\begin{itemize}
+    \item 4.2.3.1 The system shall allow admins to update existing workflows.
+    \item 4.2.3.2 The system shall prepopulate the update form with current workflow data.
+    \item 4.2.3.3 The same validation rules as creation shall apply.
+    \item 4.2.3.4 The system shall not allow workflow deletion through the interface.
+    \item 4.2.3.5 The system shall display an informational note that deletion must be handled
+    manually if required.
+\end{itemize}
+
+\subsubsection{Workflow Step Management}
+
+\textbf{Step Display}
+\begin{itemize}
+    \item 4.3.1.1 The system shall display all steps associated with a selected workflow.
+    \item 4.3.1.2 Each step shall display: StepNumber, StepName, Description, and Actions
+    (Edit/Delete).
+\end{itemize}
+
+\textbf{Step Creation}
+\begin{itemize}
+    \item 4.3.2.1 The system shall allow the admin to create new steps within a workflow.
+    \item 4.3.2.2 Required fields: StepName (unique within workflow).
+    \item 4.3.2.3 Optional fields: StepNumber (auto-assigned if omitted).
+    \item 4.3.2.4 The system shall validate StepNumber uniqueness within the workflow.
+\end{itemize}
+
+\textbf{Step Update}
+\begin{itemize}
+    \item 4.3.3.1 The system shall allow admins to update existing step data.
+    \item 4.3.3.2 The system shall prepopulate the step form with current information.
+    \item 4.3.3.3 Validation rules shall match those used in creation.
+\end{itemize}
+
+\textbf{Step Deletion}
+\begin{itemize}
+    \item 4.3.4.1 The system shall prompt for confirmation before deleting a step.
+    \item 4.3.4.2 The system shall check for dependent tasks before deletion.
+    \item 4.3.4.3 If dependencies exist, the system shall reassign tasks to the next step
+    before deletion.
+    \item 4.3.4.4 The system shall delete steps using Entity Framework, preventing cascading
+    deletions beyond the step.
+\end{itemize}
+
+\subsubsection{Task Management}
+\begin{itemize}
+    \item 4.4.1 The system shall display all tasks associated with a selected workflow.
+    \item 4.4.2 Each task shall display: AssignedTo, Status, Step, and Actions (Complete Task
+    / Reassign).
+    \item 4.4.3 The system shall allow admins to assign or unassign tasks to users.
+    \item 4.4.4 The system shall allow admins to mark tasks as complete.
+\end{itemize}
+
+\subsubsection{Error Handling and Validation}
+\begin{itemize}
+    \item 4.5.1 The system shall perform input validation on both client and server sides.
+    \item 4.5.2 The system shall display user-friendly error messages for invalid inputs.
+    \item 4.5.3 The system shall handle and report database exceptions such as concurrency or
+    foreign key violations.
+    \item 4.5.4 Invalid or incomplete form submissions shall be rejected.
+\end{itemize}
+
+\subsubsection{Workflow and Step History}
+\begin{itemize}
+    \item 4.6.1 The system shall display task and step history for each workflow.
+    \item 4.6.2 History shall be shown in chronological order.
+    \item 4.6.3 The system shall allow viewing history at both workflow and step levels in a
+    readable format.
+\end{itemize}
+
+\subsection{Logical Database Requirements}
+
+\subsubsection{Core Entities}
+\begin{itemize}
+    \item \textbf{User:} UserID, Username, Email, Role, Status
+    \item \textbf{Workflow:} WorkflowID, Name, Description, Status, CreatedBy, CreatedDate
+    \item \textbf{WorkflowStep:} StepID, WorkflowID, StepNumber, StepName, Description
+    \item \textbf{Task:} TaskID, WorkflowID, StepID, AssignedTo, Status, StartDate,
+    CompletionDate
+\end{itemize}
+
+\subsubsection{Constraints}
+\begin{itemize}
+    \item Each workflow must have at least one step.
+    \item StepNumber must be unique within a workflow.
+    \item Workflow names must be unique.
+    \item Deleting a workflow must not delete dependent tasks.
+\end{itemize}
+
+\subsubsection{Data Retention}
+\begin{itemize}
+    \item Completed workflows and task records must be retained for three years.
+    \item Archived data will be read-only.
+\end{itemize}
+
+\subsection{Design Constraints}
+\begin{itemize}
+    \item Built using ASP.NET MVC, C\#, Entity Framework.
+    \item Must run under IIS on Windows Server.
+    \item Supports SQL Server 2019+ and Oracle 19c+.
+    \item HTTPS/TLS 1.2+ required.
+    \item Up to 100 concurrent users; page load $\leq$ 3 seconds.
+    \item Developed in Visual Studio 2022+.
+    \item Version control through GitHub Enterprise.
+    \item Only approved NuGet packages permitted.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Other Nonfunctional Requirements}
+% ─────────────────────────────────────────────
+
+\subsection{Performance Requirements}
+\begin{itemize}
+    \item Average system response time should not exceed 2--3 seconds for any database query
+    under normal conditions.
+    \item The system shall handle concurrent requests from at least 100 users.
+    \item Workflow search queries should return results within 1 second for up to 10,000
+    records.
+\end{itemize}
+
+\subsection{Safety Requirements}
+\begin{itemize}
+    \item The system shall prevent unauthorized deletion or modification of workflow data.
+    \item The application shall include automated daily backups of all critical data.
+    \item In case of failure, the system shall restore from the last known good backup.
+\end{itemize}
+
+\subsection{Security Requirements}
+\begin{itemize}
+    \item Authorization is based on a URL query string flag.
+    \item Role-based access control (RBAC) must be strictly enforced.
+    \item Session timeout will occur after 15 minutes of inactivity.
+    \item All sensitive fields (e.g., user credentials, role mappings) must be encrypted in
+    transit and at rest.
+\end{itemize}
+
+\subsection{Software Quality Attributes}
+\begin{itemize}
+    \item \textbf{Reliability:} The system must maintain 99.5\% uptime during business hours.
+    \item \textbf{Usability:} Interfaces must follow accessibility (Section 508) guidelines.
+    \item \textbf{Maintainability:} Source code should follow SOLID design principles and
+    include XML documentation.
+    \item \textbf{Scalability:} The system must allow future integration with third-party APIs.
+    \item \textbf{Portability:} The application must support deployment in both SQL Server and
+    Oracle environments.
+\end{itemize}
+
+\subsection{Business Rules}
+\begin{itemize}
+    \item Only administrators can create or modify workflows.
+    \item Workflows cannot be deleted once created; they may only be archived.
+    \item Tasks cannot be reassigned once marked as ``Completed.''
+    \item Workflow names must be unique and descriptive to prevent duplication.
+    \item Each workflow must contain at least one step before activation.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Legal and Ethical Considerations}
+% ─────────────────────────────────────────────
+
+\subsection{Scope and Sensitivity}
+The Workflow Queue (WFQ) system may process sensitive organizational data and personally
+identifiable information (PII) associated with authenticated users. The design therefore
+prioritizes confidentiality, integrity, availability, and accountability in both data handling
+and system behavior.
+
+\subsection{Access Control and Authorization}
+\begin{itemize}
+    \item All users authenticate through the organization's identity provider.
+    \item Role-based access control (RBAC) enforces least-privilege access; only users with
+    the Admin role may access administrative functions.
+    \item Administrative actions are logged to support accountability and post-event review.
+\end{itemize}
+
+\subsection{Transmission and Session Security}
+\begin{itemize}
+    \item All browser--server and service-to-service communications shall use HTTPS/TLS.
+    \item Sessions shall follow organization policy for timeout and re-authentication (e.g.,
+    15 minutes of inactivity).
+    \item Sensitive values shall never be transmitted or stored in plaintext.
+    \item Tokens, cookies, and session identifiers shall be marked HttpOnly and Secure and
+    protected against CSRF.
+\end{itemize}
+
+\subsection{Data Integrity, Auditability, and Non-Repudiation}
+\begin{itemize}
+    \item Workflow and task history shall be preserved and viewable to authorized users.
+    \item Deleting workflows in the UI shall not be supported; archival is the approved
+    lifecycle state.
+    \item Database operations shall avoid cascade deletes that would remove dependent records.
+    \item All administrative actions shall be logged with timestamp, actor, and outcome.
+\end{itemize}
+
+\subsection{Retention and Archival}
+\begin{itemize}
+    \item Completed workflows and task records shall be retained per organizational retention
+    policy and then archived in read-only form.
+    \item Automated daily backups and documented restore procedures shall support continuity
+    and evidence preservation.
+    \item Access to archives shall be restricted and monitored.
+\end{itemize}
+
+\subsection{Compliance Alignment}
+\begin{itemize}
+    \item The system shall align with internal cybersecurity, authentication, and
+    records-management policies.
+    \item If scope later includes regulated data types (e.g., PHI), controls shall be extended
+    to meet the applicable regulatory framework without weakening existing safeguards.
+    \item Periodic reviews shall verify continued alignment with policy and regulatory changes.
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\appendix
+\section{Glossary}
+% ─────────────────────────────────────────────
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Term & Definition \\
+\midrule
+WFQ   & Workflow Queue System \\
+RBAC  & Role-Based Access Control \\
+ORM   & Object-Relational Mapping \\
+HTTPS & Hypertext Transfer Protocol Secure \\
+AD    & Active Directory \\
+MVC   & Model-View-Controller \\
+CRUD  & Create, Read, Update, Delete \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Analysis Models}
+\begin{itemize}
+    \item \textbf{Use Case Diagram:} Displays relationships between users (Admin, Manager,
+    User) and system functions (Create Workflow, Approve Task, Track Progress).
+    \item \textbf{ER Diagram:} Shows logical relationships between User, Workflow,
+    WorkflowStep, and Task entities.
+    \item \textbf{Sequence Diagram:} Illustrates user login and workflow approval sequence.
+\end{itemize}
+
+\section{To Be Determined List}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Item & Description & Target Decision Date \\
+\midrule
+Workflow Name Max Length        & Maximum character limit for Name field              & TBD by Dev Team \\
+StepNumber Auto-Increment Rule  & Define logic for assigning new step numbers         & TBD by Design Lead \\
+User Role Mapping Details       & Final mapping between AD roles and WFQ roles        & TBD by QTC Security Team \\
+Reporting Module                & Inclusion of dashboard analytics                    & Version 2.0 \\
+Notification Integration        & Email and Teams alerts for approvals                & Version 2.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}

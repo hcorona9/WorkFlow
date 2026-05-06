@@ -1,0 +1,307 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{parskip}
+
+\title{Snapshot Objectives\\
+\large QTC Workflow Queue (WFQ) Administrator Application}
+\author{Course Team --- CS3338}
+\date{Version 1.0 \\ Snapshot 1 Start}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────
+\section{Snapshot 1 — Start Objective}
+% ─────────────────────────────────────────────
+
+\subsection{Overview}
+Snapshot 1 marks the beginning of our course team's engagement with the QTC Workflow Queue
+(WFQ) Administrator Application project. This project is being used as a template to
+demonstrate proficiency in a set of software engineering tools: GitHub, Docker, Jira,
+TestRail, and LaTeX.
+
+The original SRS and SDD documents were produced by the QTC project team (Leidos QTC Health
+Services). Our team's role is to build on top of this existing foundation --- adapting the
+documentation into LaTeX, setting up the development toolchain, and adding new features and
+testing artifacts across each snapshot.
+
+Snapshot 1 covers the first two months of the six-month project timeline and focuses on
+toolchain setup and establishing the base project structure.
+
+\subsection{Goals}
+
+\begin{itemize}
+    \item \textbf{Repository Setup (GitHub):} Initialize the GitHub repository with the
+    required folder structure (\texttt{/docs}, \texttt{/testrail}), a README user manual,
+    and all required LaTeX documents.
+
+    \item \textbf{Documentation (LaTeX):} Convert the existing SRS and SDD documents into
+    \texttt{.tex} format. Create the Design Specification and this Snapshot Objectives
+    document from scratch.
+
+    \item \textbf{Containerization (Docker):} Create a \texttt{docker-compose.yml} file
+    that defines the application's services (frontend/backend and database), based on the
+    technology stack defined in the SDD.
+
+    \item \textbf{Project Management (Jira):} Set up a Jira project with Sprint 1 tasks
+    derived from the existing requirements. Add known risk/bug tickets that will be used
+    in TestRail test cases.
+
+    \item \textbf{Base Application Framework:} Initialize the ASP.NET Core MVC project,
+    configure Entity Framework Core with the existing WFQ SQL Server database, and
+    implement the three-layer architecture (Presentation, Business Logic, Data Access).
+
+    \item \textbf{Authorization Module:} Implement the URL query string flag-based
+    authorization mechanism (\texttt{?is\_admin=true}).
+
+    \item \textbf{Workflow Dashboard:} Build the core Workflow Management Dashboard,
+    including a paginated, searchable, and sortable list of all existing workflows.
+
+    \item \textbf{Workflow CRUD:} Implement the ability for administrators to create and
+    update workflows, including all required field validation.
+\end{itemize}
+
+\subsection{Task Delegation}
+
+\textit{Replace the names below with your actual course team members and their assigned
+responsibilities.}
+
+\begin{center}
+\begin{tabular}{>{\bfseries}p{4cm} p{9cm}}
+\toprule
+Team Member & Responsibility \\
+\midrule
+(Member 1) & Repository setup, README, GitHub structure \\
+(Member 2) & SRS.tex conversion and formatting \\
+(Member 3) & SDD.tex conversion and formatting \\
+(Member 4) & DesignSpec.tex, UI component breakdown \\
+(Member 5) & docker-compose.yml, Docker service definitions \\
+(Member 6) & Jira project setup, Sprint 1 task creation \\
+(Member 7) & Authorization Module implementation \\
+(Member 8) & Workflow Dashboard UI \\
+(Member 9) & Workflow Create/Edit functionality \\
+(Member 10) & SnapshotObjectives.tex, Workflow Diagram \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Base Dependencies}
+
+\begin{itemize}
+    \item \textbf{Framework:} ASP.NET Core MVC (.NET 7)
+    \item \textbf{ORM:} Entity Framework Core 7
+    \item \textbf{Database:} Microsoft SQL Server 2019+
+    \item \textbf{Web Server:} Internet Information Services (IIS) 10.0
+    \item \textbf{IDE:} Visual Studio 2022
+    \item \textbf{Source Control:} Git, hosted on GitHub
+    \item \textbf{NuGet Packages:}
+    \begin{itemize}
+        \item \texttt{Microsoft.EntityFrameworkCore.SqlServer}
+        \item \texttt{Microsoft.EntityFrameworkCore.Tools}
+        \item \texttt{Microsoft.AspNetCore.Authorization}
+    \end{itemize}
+\end{itemize}
+
+% ─────────────────────────────────────────────
+\section{Snapshot 2 — 1st Checkpoint Objective}
+% ─────────────────────────────────────────────
+
+\subsection{Reflection on Snapshot 1}
+Snapshot 1 established the full foundation of the project. The repository was structured on
+GitHub with all required LaTeX documents (SRS, SDD, Design Specification, and this Snapshot
+Objectives document). The base ASP.NET Core MVC application was initialized with Entity
+Framework Core connected to the WFQ SQL Server database. The Authorization Module
+(\texttt{?is\_admin=true} query string flag) was implemented, and the core Workflow
+Management Dashboard was built, including paginated workflow listing, search, sort, workflow
+creation, and workflow update functionality. Jira Sprint 1 was configured with tasks and
+known risk tickets. The Docker \texttt{docker-compose.yml} scaffold was also created.
+
+All Snapshot 1 goals were completed as planned.
+
+\subsection{New Feature: Email Notification System}
+Snapshot 2 introduces the \textbf{Email Notification System} --- a new service that
+automatically sends email alerts to relevant users when key workflow events occur. This
+feature was identified in the original SRS (Section 2.9) as a planned future addition
+(Version 2.0) and is now being implemented as part of this course project.
+
+\subsection{Goals}
+
+\begin{itemize}
+    \item \textbf{Notification Service (Backend):} Implement a new
+    \texttt{INotificationService} interface and \texttt{EmailNotificationService} class
+    within the Business Logic Layer. This service will be responsible for composing and
+    sending email notifications using SMTP.
+
+    \item \textbf{Trigger Points:} Integrate notification triggers into the existing
+    \texttt{WorkflowAdminService} for the following events:
+    \begin{itemize}
+        \item A task is assigned or reassigned to a user.
+        \item A task is marked as completed.
+        \item A new workflow step is created.
+    \end{itemize}
+
+    \item \textbf{Email Templates:} Create simple, readable plain-text email templates for
+    each notification type. Templates will include the workflow name, step name, task
+    details, and a direct link to the relevant workflow in the application.
+
+    \item \textbf{Configuration:} Add SMTP configuration settings to
+    \texttt{appsettings.json} (host, port, sender address). Credentials will be stored
+    securely and not committed to source control.
+
+    \item \textbf{Documentation Updates:} Update the SRS (new functional requirements),
+    SDD (new service module section), and Design Specification (notification behavior per
+    page) to reflect the new feature.
+
+    \item \textbf{Jira Sprint 2:} Create a new sprint with tasks covering backend service
+    implementation, template creation, configuration, and testing.
+
+    \item \textbf{TestRail Snapshot 2:} Create and execute a test run in TestRail covering
+    the notification feature. Export the run summary report and add it to the
+    \texttt{/testrail} folder.
+\end{itemize}
+
+\subsection{New Dependencies}
+
+\begin{itemize}
+    \item \textbf{NuGet Package:} \texttt{MailKit} (pinned version) --- a cross-platform
+    .NET library for sending email via SMTP. Chosen over \texttt{System.Net.Mail} for
+    better async support and testability.
+    \item \textbf{SMTP Server:} A configured SMTP relay (e.g., Gmail SMTP, SendGrid, or a
+    local MailHog instance for development/testing).
+\end{itemize}
+
+\subsection{Task Delegation}
+
+\textit{Replace the names below with your actual course team members and their assigned
+responsibilities for Snapshot 2.}
+
+\begin{center}
+\begin{tabular}{>{\bfseries}p{4cm} p{9cm}}
+\toprule
+Team Member & Responsibility \\
+\midrule
+(Member 1) & INotificationService interface and EmailNotificationService implementation \\
+(Member 2) & SMTP configuration, appsettings.json updates, secrets management \\
+(Member 3) & Email template design (task assigned, task completed, step created) \\
+(Member 4) & Integration of notification triggers into WorkflowAdminService \\
+(Member 5) & SRS updates (new functional requirements section) \\
+(Member 6) & SDD updates (new Notification Service module section) \\
+(Member 7) & Design Spec updates (notification behavior per page) \\
+(Member 8) & Jira Sprint 2 setup and task creation \\
+(Member 9) & TestRail test case creation and test run execution \\
+(Member 10) & Workflow Diagram update, SnapshotObjectives.tex Snapshot 2 section \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────
+\section{Snapshot 3 — 2nd Checkpoint Objective}
+% ─────────────────────────────────────────────
+
+\subsection{Reflection on Snapshot 2}
+Snapshot 2 introduced the Email Notification System, a new feature that extends the WFQ
+Administrator Application with automated email alerts for key workflow events (task assigned,
+task completed, step created). The \texttt{INotificationService} interface and
+\texttt{EmailNotificationService} implementation were added to the Business Logic Layer using
+the \textbf{MailKit} NuGet library. SMTP configuration was added to
+\texttt{appsettings.json} with credentials managed via environment variables. Notification
+triggers were integrated into the existing \texttt{WorkflowAdminService}. The SRS, SDD, and
+Design Specification were updated to reflect the new feature. Jira Sprint 2 was configured
+and TestRail Snapshot 2 test cases were created and executed.
+
+All Snapshot 2 goals were completed as planned.
+
+\subsection{New Feature: Workflow Export / Report Generation}
+Snapshot 3 introduces the \textbf{Workflow Export and Report Generation} feature --- a new
+capability that allows administrators to export a workflow's full details (steps, tasks, and
+history) as a downloadable \textbf{PDF} or \textbf{CSV} file directly from the Workflow
+Details page.
+
+This feature was not present in the original project and is a new addition by the CS3338
+course team. It introduces a new \texttt{IExportService} component to the Business Logic
+Layer and adds export action endpoints to the \texttt{WorkflowsController}.
+
+\subsection{Goals}
+
+\begin{itemize}
+    \item \textbf{Export Service (Backend):} Implement a new \texttt{IExportService}
+    interface and \texttt{WorkflowExportService} class within the Business Logic Layer.
+    This service will be responsible for generating PDF and CSV representations of a
+    workflow's data.
+
+    \item \textbf{PDF Export:} Generate a formatted PDF report containing the workflow
+    name, description, status, a table of all steps (StepNumber, StepName, Description),
+    and a table of all tasks (AssignedTo, Status, Step). Use the \textbf{QuestPDF} NuGet
+    library for PDF generation.
+
+    \item \textbf{CSV Export:} Generate a flat CSV file containing all tasks for a selected
+    workflow, with columns: WorkflowName, StepName, StepNumber, TaskID, AssignedTo, Status,
+    StartDate, CompletionDate.
+
+    \item \textbf{UI Integration:} Add ``Export PDF'' and ``Export CSV'' buttons to the
+    Workflow Details page. Clicking either button triggers a file download in the browser
+    without navigating away from the page.
+
+    \item \textbf{Documentation Updates:} Update the SRS (new functional requirements),
+    SDD (new Export Service module section), and Design Specification (new export buttons
+    on the Workflow Details page) to reflect the new feature.
+
+    \item \textbf{Jira Sprint 3:} Create a new sprint with tasks covering backend service
+    implementation, PDF/CSV generation, UI button integration, and testing.
+
+    \item \textbf{TestRail Snapshot 3:} Create and execute a test run in TestRail covering
+    the export feature. Export the run summary report and add it to the
+    \texttt{/testrail} folder.
+\end{itemize}
+
+\subsection{New Dependencies}
+
+\begin{itemize}
+    \item \textbf{NuGet Package:} \texttt{QuestPDF} (pinned version) --- a modern,
+    fluent .NET library for generating PDF documents. Chosen for its clean API, active
+    maintenance, and suitability for server-side rendering without external dependencies.
+    \item \textbf{No additional packages required for CSV} --- CSV generation will be
+    handled using the built-in \texttt{System.Text} and \texttt{StringBuilder} classes to
+    avoid unnecessary dependencies.
+\end{itemize}
+
+\subsection{Task Delegation}
+
+\textit{Replace the names below with your actual course team members and their assigned
+responsibilities for Snapshot 3.}
+
+\begin{center}
+\begin{tabular}{>{\bfseries}p{4cm} p{9cm}}
+\toprule
+Team Member & Responsibility \\
+\midrule
+(Member 1) & IExportService interface and WorkflowExportService implementation \\
+(Member 2) & PDF report layout and generation using QuestPDF \\
+(Member 3) & CSV generation logic using StringBuilder \\
+(Member 4) & Export controller actions and file download response handling \\
+(Member 5) & UI integration --- Export PDF and Export CSV buttons on Workflow Details page \\
+(Member 6) & SRS updates (new functional requirements section) \\
+(Member 7) & SDD updates (new Export Service module section) \\
+(Member 8) & Design Spec updates (export buttons and behavior) \\
+(Member 9) & Jira Sprint 3 setup and task creation \\
+(Member 10) & TestRail test case creation, test run execution, and report export \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────
+\section{Snapshot 4 — Due Date Checkpoint}
+% ─────────────────────────────────────────────
+
+\textit{To be completed at Snapshot 4.}
+
+\end{document}
