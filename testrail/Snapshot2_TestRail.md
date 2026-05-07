@@ -34,16 +34,17 @@
 ---
 
 ## Summary
+<img width="721" height="247" alt="ss2" src="https://github.com/user-attachments/assets/670f3aba-abaa-4153-803f-ac5a0e7a1ba4" />
+<img width="716" height="347" alt="ss2p2" src="https://github.com/user-attachments/assets/480b694f-52d3-42e0-8182-022ac04b1c52" />
 
-*(Paste your TestRail Run Summary report screenshot or export here after completing the test run.)*
+
 
 - **Total Tests:** 10  
-- **Passed:** *(fill in)*  
-- **Failed:** *(fill in)*  
-- **Blocked/Skipped:** *(fill in)*
+- **Passed:** *6*  
+- **Failed:** *4*  
+- **Blocked/Skipped:** *N/A*
 
 ---
 
 ## Notes / Defects Found
-
-*(Document any bugs or issues discovered during this test run here.)*
+*N/A*
