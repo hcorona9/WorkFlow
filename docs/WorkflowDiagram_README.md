@@ -1,12 +1,3 @@
 ﻿# Workflow Diagram
 
-Place the exported WorkflowDiagram.png (Level 0 DFD) in this folder.
-
-The diagram should show:
-- QTC Administrator (User)
-- HTTP Requests / HTTP Responses
-- WFQ Administrator Application (New)
-- T-SQL / EF Core Queries / SQL Results
-- Workflow Database (Existing)
-
-See SDD Section 4.1 for the full description.
+<img width="290" height="223" alt="workflow" src="https://github.com/user-attachments/assets/b46fe69b-8287-4783-891f-d96293ad5812" />
