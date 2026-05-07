@@ -37,13 +37,17 @@
 ---
 
 ## Summary
+<img width="716" height="340" alt="testrun1" src="https://github.com/user-attachments/assets/034a1584-2887-4d45-a21d-16867817f9ae" />
+<img width="1454" height="758" alt="Screenshot 2026-05-07 131035" src="https://github.com/user-attachments/assets/d15087be-bd14-4c52-abd1-bbc69e99c075" />
+<img width="1450" height="547" alt="Screenshot 2026-05-07 131056" src="https://github.com/user-attachments/assets/2df48f9c-3412-4a89-a220-e18be217fce6" />
 
-*(Paste your TestRail Run Summary report screenshot or export here after completing the test run.)*
+
+
 
 - **Total Tests:** 13  
-- **Passed:** *(fill in)*  
-- **Failed:** *(fill in)*  
-- **Blocked/Skipped:** *(fill in)*
+- **Passed:** *10*  
+- **Failed:** *3*  
+- **Blocked/Skipped:** *N/A*
 
 ---
 
