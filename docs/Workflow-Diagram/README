@@ -1,33 +1,65 @@
 # Workflow Diagram
 
-## Overview
 This folder contains the high-level workflow diagram for the QTC Workflow Queue (WFQ) Administrator Application.
 
-The diagram explains how the software system operates at a high level, including:
+> **Course:** CS3338 — Software Engineering  
+> **Project:** QTC Workflow Queue (WFQ) Administrator Application  
+> **File:** WorkflowDiagram.png  
+> **Diagram Type:** Level 0 Data Flow Diagram (DFD)
 
-- How the QTC Administrator connects to the application
-- How HTTP requests and responses are handled
-- How the WFQ Administrator Application communicates with the database
-- How data is stored and retrieved from the Workflow Database
-- What system components have access to workflow information
-
-## Included Components
-The workflow diagram includes the following major entities:
-
-1. QTC Administrator (User)
-2. WFQ Administrator Application
-3. Workflow Database
-
-## Data Flow
-The workflow demonstrates:
-
-- User requests sent through HTTP
-- Application responses returned to the user
-- Entity Framework Core / T-SQL database queries
-- SQL results returned from the database
-
-## Files
-- `WorkflowDiagram.png` — Level 0 Data Flow Diagram (DFD)
+---
 
 ## Purpose
-The purpose of this diagram is to provide a visual representation of the system architecture and data flow for developers, testers, and project reviewers.
+
+The purpose of this workflow diagram is to explain, at a high level, how the WFQ Administrator Application works. It shows how the user connects to the UI, how requests are handled by the application, where the data goes, and what system components have access to the workflow data.
+
+---
+
+## Diagram Overview
+
+The workflow diagram includes the following major parts:
+
+| Component | Description |
+|---|---|
+| QTC Administrator | The authorized user who accesses the WFQ Administrator Application |
+| HTTP Requests / Responses | The communication between the user and the web application |
+| WFQ Administrator Application | The ASP.NET Core MVC application used to manage workflows |
+| T-SQL / EF Core Queries | The database queries sent by the application |
+| Workflow Database | The existing SQL Server database that stores workflow information |
+
+---
+
+## Data Flow
+
+1. The QTC Administrator accesses the WFQ Administrator Application through the web interface.
+2. The user sends HTTP requests by viewing, creating, editing, or deleting workflow data.
+3. The WFQ Administrator Application processes the request.
+4. The application sends T-SQL / Entity Framework Core queries to the Workflow Database.
+5. The Workflow Database returns SQL results back to the application.
+6. The application sends an HTTP response back to the QTC Administrator.
+
+---
+
+## Included File
+
+| File | Description |
+|---|---|
+| [WorkflowDiagram.png](WorkflowDiagram.png) | Level 0 DFD showing the high-level data flow of the WFQ Administrator Application |
+
+---
+
+## Requirement Covered
+
+This diagram satisfies the workflow diagram requirement:
+
+> Create a high-level diagram of the project that explains how the software works, how a user connects to the UI/UX software, where the data goes, and what has access.
+
+---
+
+## Related Documents
+
+| Document | Description |
+|---|---|
+| [SDD](../SDD/SDD.tex) | Software Design Document |
+| [SRS](../SRS/SRS.tex) | Software Requirements Specification |
+| [Design Spec](../DesignSpec/DesignSpec.tex) | Design Specification |
