@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  wfq-admin-app:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    container_name: wfq-admin-app
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=wfq-database;Database=WorkflowDB;User Id=sa;Password=YourStrongPassword123;TrustServerCertificate=True;
+    depends_on:
+      - wfq-database
+
+  wfq-database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: wfq-database
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrongPassword123
+    volumes:
+      - wfq_sql_data:/var/opt/mssql
+
+volumes:
+  wfq_sql_data:
