@@ -1,15 +1,33 @@
 # Workflow Diagram
 
-High-level Level 0 Data Flow Diagram (DFD) for the QTC Workflow Queue (WFQ) Administrator Application.
-
----
-
 ## Overview
+This folder contains the high-level workflow diagram for the QTC Workflow Queue (WFQ) Administrator Application.
 
-This diagram shows:
+The diagram explains how the software system operates at a high level, including:
 
 - How the QTC Administrator connects to the application
-- HTTP requests and responses
-- Communication between the WFQ Administrator Application and the Workflow Database
-- T-SQL / EF Core query flow
-- System-level data access
+- How HTTP requests and responses are handled
+- How the WFQ Administrator Application communicates with the database
+- How data is stored and retrieved from the Workflow Database
+- What system components have access to workflow information
+
+## Included Components
+The workflow diagram includes the following major entities:
+
+1. QTC Administrator (User)
+2. WFQ Administrator Application
+3. Workflow Database
+
+## Data Flow
+The workflow demonstrates:
+
+- User requests sent through HTTP
+- Application responses returned to the user
+- Entity Framework Core / T-SQL database queries
+- SQL results returned from the database
+
+## Files
+- `WorkflowDiagram.png` — Level 0 Data Flow Diagram (DFD)
+
+## Purpose
+The purpose of this diagram is to provide a visual representation of the system architecture and data flow for developers, testers, and project reviewers.
