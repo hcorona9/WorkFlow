@@ -13,7 +13,7 @@
 ## Jira Board
 
 > **[Click here to view the Jira Project Board](https://calstatela-team-uqomn8ag.atlassian.net/jira/software/projects/FS/boards/133)**  
-> *(Replace `#` with your team's Jira board URL)*
+> 
 
 ---
 
