@@ -4,7 +4,7 @@
 > **Note:** This repository is a course project. Our team is using the QTC Workflow Queue (WFQ) project as a base template to demonstrate proficiency in software engineering tools including GitHub, Docker, Jira, TestRail, and LaTeX. The original SRS and SDD documents were produced by the QTC project team. Our contributions consist of toolchain setup, new feature additions, documentation updates, and testing artifacts added across each snapshot.
 
 **Original Project:** QTC Workflow Queue (WFQ) Administrator Application by Leidos QTC Health Services  
-**Course Team:** *(Add your group member names here)*  
+**Course Team:** Ivonne Arizpe, Hector Corona, Ruby Quinones, Janise Williams 
 **Project Timeframe:** 6 Months  
 **Version:** 1.0 (Snapshot 1)
 
