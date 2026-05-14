@@ -1,3 +1,3 @@
 # Jira Documentation
 
-This folder contains Jira sprint planning and workflow tracking screenshots for the project.
+**[Click here to view the Jira Project Board](https://calstatela-team-uqomn8ag.atlassian.net/jira/software/projects/FS/boards/133)** 
