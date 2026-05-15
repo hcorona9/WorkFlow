@@ -1,6 +1,14 @@
 version: "3.8"
 
 services:
+  wfq-frontend:
+    image: node:18
+    container_name: wfq-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - wfq-admin-app
+
   wfq-admin-app:
     image: mcr.microsoft.com/dotnet/aspnet:8.0
     container_name: wfq-admin-app
