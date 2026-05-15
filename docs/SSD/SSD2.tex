@@ -1,0 +1,285 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{parskip}
+ 
+\title{Software Design Document\\
+\large Workflow Queue (WFQ) Administrator Application}
+\author{Ivonne Arizpe \and Hector Corona \and Ruby Quinones \and Janise Williams\\[0.5em]
+\textit{CS3338 Course Group 9}}
+\date{Version 1.0 \\ May 14, 2026}
+ 
+\begin{document}
+ 
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+ 
+% ─────────────────────────────────────────────
+\section*{Revision History}
+% ─────────────────────────────────────────────
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Name & Date & Reason For Changes & Version \\
+\midrule
+Ivonne Arizpe  & 5/2/2026 & Initial Document                                    & 1.0 \\
+Ruby Quinones       & 5/2/2026 & Section 3                                           & 1.2 \\
+Ivonne Arizpe        & 5/3/2026 & Section 1 Introduction, Section 4 System Architecture & 1.2 \\
+Hector Corona     & 5/3/2026 & Section 8: Database Design completion               & 1.3 \\
+Ivonne Arizpe       & 5/3/2026 & Section 4, 6, and 7, 9                              & 1.4 \\
+Janise Williams     & 5/4/2026 & Section 9 User Interface                            & 1.5 \\
+Ruby Quinones    & 5/6/2026 & Section 10: Requirements Validation and Table of Contents & 1.5 \\
+Ivonne Arizpe        & 5/6/2026 & Section 12: References                              & 1.5 \\
+Janise Williams     & 5/7/2026 & Section 5: Policies and Tactics, Section 11: Glossary & 1.5 \\
+Hector Corona         & 5/8/2026  & Finalized Section 2, Removed API info               & 1.6 \\
+Hector Corona        & 5/8/2026  & Section 1 and Section 4 Revisions                  & 1.6 \\
+Ruby Quinones     & 5/9/2026  & Section 12.2 Regulatory References Revision         & 1.7 \\
+Ivonne Arizpe          & 5/9/2026  & Section 12.2 Regulatory Revisions                  & 1.7 \\
+Janise Williams        & 5/9/2026  & Section 10 Requirements Validation Revisions        & 1.7 \\
+Hector Corona       & 5/10/2026  & Added existing architecture info                    & 1.8 \\
+Ruby Quinones     & 5/10/2026 & Removed Section 12.2, updated Section 2.2 and 3.4  & 1.8 \\
+Janise Williams    & 5/10/2026 & Section 10 edited, removed API calling              & 1.8 \\
+Ivonne Arizpe        & 5/10/2026 & Section 1 Introduction updated component descriptions & 1.8 \\
+Ruby Quinones        & 5/10/2026 & Removed Business Logic Mentions in 6.2              & 1.8 \\
+Janise Williams        & 5/11/2026 & Revised section 6.4.6 and Section 4.1 DFD           & 1.8 \\
+Janise Williams        & 5/12/2026 & Revised formatting for sections 7 and 8             & 1.8 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\newpage
+ 
+% ─────────────────────────────────────────────
+\section{Introduction}
+% ─────────────────────────────────────────────
+ 
+\subsection{Purpose}
+This Software Design Document (SDD) describes the design decisions made by CS3338 Group 9
+for the Workflow Queue (WFQ) Administrator Application. It explains how our team structured
+and planned the project, based on the ten tasks tracked in our Jira project board
+(FinalProject-Scrum). This document is intended to show how our design choices address the
+goals of each Jira task.
+ 
+\subsection{Scope}
+The WFQ Administrator Application is a web-based tool that allows authorized administrators
+to manage workflows, steps, and tasks. Our team's design covers the following areas, each
+derived directly from our Jira backlog:
+ 
+\begin{itemize}
+    \item Database connectivity and error handling (FS-1, FS-9)
+    \item Repository and version control setup (FS-2, FS-6)
+    \item LaTeX documentation (FS-3, FS-4)
+    \item Docker-based deployment (FS-5)
+    \item TestRail integration for testing (FS-7)
+    \item User authentication (FS-8)
+    \item Bug tracking for login issues (FS-10)
+\end{itemize}
+ 
+\subsection{Intended Audience}
+\begin{itemize}
+    \item \textbf{Group 9 Developers:} For implementation reference.
+    \item \textbf{Course Instructor:} To evaluate the team's design decisions and task
+    planning.
+    \item \textbf{QA Testers:} To understand the system design when writing and executing
+    test cases.
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\section{System Overview}
+% ─────────────────────────────────────────────
+ 
+The WFQ Administrator Application was planned and tracked using a Jira Scrum board with ten
+tasks (FS-1 through FS-10). Each task represents a component or area of work that our team
+designed and is responsible for. The system is built on ASP.NET Core MVC with a SQL Server
+database backend, containerized using Docker, and tested through TestRail.
+ 
+The design of the system follows a layered approach:
+\begin{itemize}
+    \item \textbf{Presentation Layer:} The web-based user interface served by ASP.NET Core MVC.
+    \item \textbf{Business Logic Layer:} C\# controllers that handle application logic and
+    route requests.
+    \item \textbf{Data Access Layer:} Entity Framework Core communicating with the SQL Server
+    database.
+    \item \textbf{Infrastructure Layer:} Docker containers for the frontend, backend, and
+    database services.
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\section{Design Decisions by Jira Task}
+% ─────────────────────────────────────────────
+ 
+This section describes the design decision and approach for each task on our Jira board.
+ 
+\subsection{FS-1: Fix Database Connection}
+The database connection is configured through the application's \texttt{appsettings.json}
+file using a named connection string. The connection string points to the SQL Server
+container defined in our \texttt{docker-compose.yml}. Entity Framework Core is used as the
+ORM to manage all database interactions.
+ 
+To make the connection reliable, the backend service in Docker Compose uses a
+\texttt{depends\_on} directive to ensure the database container is running before the
+application starts. Connection credentials are stored in environment variables and are not
+hardcoded in the source code.
+ 
+\subsection{FS-2: Repository Setup}
+The GitHub repository is organized with the following folder structure:
+ 
+\begin{itemize}
+    \item \texttt{/docs} --- Contains all \LaTeX{} documentation files including the SRS,
+    SDD, Design Specification, Snapshot Objectives, and User Manual.
+    \item \texttt{/testrail} --- Contains TestRail test run reports for Snapshots 2, 3,
+    and 4 in Markdown format.
+    \item \texttt{README.md} --- The project's user manual providing an overview, Jira link,
+    and access instructions.
+    \item \texttt{docker-compose.yml} --- The Docker Compose configuration for running
+    all services.
+\end{itemize}
+ 
+All team members were given collaborator access to the repository and committed work
+throughout the project lifecycle.
+ 
+\subsection{FS-3: LaTeX SRS (Version 1)}
+The Software Requirements Specification was written in \LaTeX{} and stored at
+\texttt{/docs/SRS/SRS.tex}. It defines the functional and non-functional requirements for
+the WFQ application from the perspective of our team's planned work. The SRS was written
+by our team and is based on the expected behaviors described in our TestRail test cases.
+ 
+\subsection{FS-4: LaTeX SDD (Version 2)}
+This document (the SDD) is the deliverable for FS-4. It is written in \LaTeX{} and stored
+at \texttt{/docs/SSD/SDD.tex}. It describes how the system was designed and how each Jira
+task maps to a design decision. The SDD is written entirely by our team and reflects our
+own project planning and design choices.
+ 
+\subsection{FS-5: Establish Docker}
+The Docker setup is defined in \texttt{docker-compose.yml} at the root of the repository.
+The configuration includes three services:
+ 
+\begin{itemize}
+    \item \textbf{wfq-frontend} --- A Node.js container serving the frontend of the
+    application on port 3000.
+    \item \textbf{wfq-admin-app} --- An ASP.NET Core container running the backend
+    application on port 8080.
+    \item \textbf{wfq-database} --- A Microsoft SQL Server 2019 container running on
+    port 1433, with a persistent volume for data storage.
+\end{itemize}
+ 
+The frontend depends on the backend, and the backend depends on the database, ensuring
+services start in the correct order. Database credentials are passed through environment
+variables.
+ 
+\subsection{FS-6: Start Git Repo}
+The GitHub repository was initialized at the start of the project with an initial commit
+containing the folder structure and README. The main branch serves as the primary branch
+for all finalized work. Team members worked on updates and committed directly to main for
+finalized changes. The repository is hosted at:
+\url{https://github.com}
+ 
+\subsection{FS-7: TestRail Connection}
+TestRail was used to manage and execute all test cases for the project. Test runs were
+created for Snapshots 2, 3, and 4. After each test run, a summary report was exported and
+saved in the \texttt{/testrail} directory of the repository. The TestRail reports include
+test case titles, expected results, and Pass/Fail status for each test.
+ 
+\subsection{FS-8: Authentication}
+User authentication is handled by the application before granting access to any
+administrative page. The design uses a URL query string parameter
+(\texttt{?is\_admin=true}) to determine admin authorization, which is checked on every
+request. If a user is not authorized, they are redirected to an Access Denied page. This
+approach was chosen for simplicity within the scope of the course project.
+ 
+\subsection{FS-9: SQL Error}
+SQL error handling is implemented at the data access layer. All database calls are wrapped
+in try-catch blocks that catch \texttt{SqlException} and general \texttt{Exception} types.
+When an error is caught, the system logs the details to the application log and displays a
+user-friendly error message on screen. The application does not crash or expose raw SQL
+error details to the end user.
+ 
+\subsection{FS-10: Potential Bug --- User Login Issues with Credentials}
+This Jira item was created as a bug ticket to track a known area of weakness: user login
+may fail when certain types of credentials are entered, such as those containing special
+characters or empty fields. This bug was logged with Highest priority because login is a
+critical entry point for the system.
+ 
+The design response to this bug is to ensure that the authentication layer validates and
+sanitizes all credential inputs before processing. Error messages shown to the user must be
+informative but must not reveal system-level details.
+ 
+% ─────────────────────────────────────────────
+\section{Technology Stack}
+% ─────────────────────────────────────────────
+ 
+The following technologies were selected by our team for this project:
+ 
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Technology & Purpose \\
+\midrule
+ASP.NET Core MVC & Web application framework for the backend and UI \\
+C\# & Primary programming language \\
+Entity Framework & ORM for database access \\
+SQL Server 2019 & Relational database for data storage \\
+Docker & Containerization of all services \\
+Docker Compose & Orchestration of multi-container deployment \\
+GitHub & Version control and collaboration \\
+Jira & Task and bug tracking \\
+TestRail & Test case management and execution \\
+\LaTeX{} & Documentation formatting \\
+\bottomrule
+\end{tabular}
+\end{center}
+ 
+% ─────────────────────────────────────────────
+\section{Constraints and Limitations}
+% ─────────────────────────────────────────────
+ 
+\begin{itemize}
+    \item The application is a course project and is not deployed to a live production
+    environment.
+    \item Authentication is simplified using a URL query string flag rather than a full
+    identity provider integration.
+    \item The database schema used is based on an existing project template provided as
+    part of the course.
+    \item The project scope is limited to what is trackable within the six-snapshot course
+    timeline.
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\appendix
+\section{Jira Task Summary}
+% ─────────────────────────────────────────────
+ 
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Jira ID & Task & Assignee \\
+\midrule
+FS-1  & Fix Database Connection & Hector Corona \\
+FS-2  & Repository Setup & Ruby Quinones \\
+FS-3  & LaTeX SRS (Version 1) & Ivonne Arizpe \\
+FS-4  & LaTeX SDD (Version 2) & Janise Williams \\
+FS-5  & Establish Docker & Janise Williams \\
+FS-6  & Start Git Repo & Hector Corona \\
+FS-7  & TestRail Connection  & Ivonne Arizpe \\
+FS-8  & Authentication & Ruby Quinones \\
+FS-9  & SQL Error & Ruby Quinones \\
+FS-10 & Potential Bug: User Login Issues & Hector Corona \\
+\bottomrule
+\end{tabular}
+\end{center}
+ 
+\section{References}
+\begin{itemize}
+    \item Jira Project Board: FinalProject-Scrum\\
+    \url{https://calstatela-team-uqomn8ag.atlassian.net/jira/software/projects/FS/boards/133}
+\end{itemize}
+ 
+\end{document}
+ 
+
+
