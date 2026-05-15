@@ -1,0 +1,330 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{parskip}
+ 
+\title{Software Requirements Specification\\
+\large Workflow Queue (WFQ) Administrator Application}
+\author{Ivonne Arizpe \and Hector Corona \and Ruby Quinones \and Janise Williams\\[0.5em]
+\textit{CS3338 Course Group 9}}
+\date{Version 1.0 \\ May 14, 2026}
+ 
+\begin{document}
+ 
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+ 
+% ─────────────────────────────────────────────
+\section*{Revision History}
+% ─────────────────────────────────────────────
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+Name & Date & Reason For Changes & Version \\
+\midrule
+Ruby Quinones   & 5/14/2026 & Initial Document                    & 1.0 \\
+Hector Corona   & 5/14/2026 & Section 1 Introduction              & 1.0 \\
+Ivonne Arizpe   & 5/14/2026 & Section 2 Overall Description       & 1.0 \\
+Janise Williams & 5/14/2026 & Sections 3 and 4 Requirements       & 1.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\newpage
+ 
+% ─────────────────────────────────────────────
+\section{Introduction}
+% ─────────────────────────────────────────────
+ 
+\subsection{Purpose}
+This Software Requirements Specification (SRS) defines the functional and non-functional
+requirements for the Workflow Queue (WFQ) Administrator Application, as developed and
+tested by CS3338 Group 9. The requirements in this document are derived from the test cases
+written and executed by our team in TestRail across Snapshots 2, 3, and 4.
+ 
+Each requirement in this document reflects an expected system behavior that our team
+identified, wrote a test case for, and validated during our test runs.
+ 
+\subsection{Scope}
+The WFQ Administrator Application is a web-based tool that allows authorized administrators
+to manage workflows, steps, tasks, and reports. This SRS covers the two major features
+tested by our team:
+ 
+\begin{itemize}
+    \item \textbf{Email Notification System} (Snapshot 2): Automated email alerts sent to
+    users and administrators when key workflow events occur.
+    \item \textbf{Workflow Export and Report Generation} (Snapshots 3 and 4): The ability
+    to export workflow data as a PDF or CSV file directly from the Workflow Details page.
+\end{itemize}
+ 
+\subsection{Intended Audience}
+\begin{itemize}
+    \item \textbf{Group 9 Developers:} Use this document as the basis for implementing
+    the features tested in TestRail.
+    \item \textbf{QA Testers:} Use this document to verify that test cases align with
+    defined requirements.
+    \item \textbf{Course Instructor:} Use this document to evaluate Group 9's understanding
+    of requirements derived from their own testing work.
+\end{itemize}
+ 
+\subsection{Definitions and Abbreviations}
+\begin{itemize}
+    \item \textbf{WFQ} -- Workflow Queue
+    \item \textbf{SRS} -- Software Requirements Specification
+    \item \textbf{PDF} -- Portable Document Format
+    \item \textbf{CSV} -- Comma-Separated Values
+    \item \textbf{SMTP} -- Simple Mail Transfer Protocol, used for sending emails
+    \item \textbf{TestRail} -- The test case management tool used by our team
+    \item \textbf{Snapshot} -- A project milestone in the CS3338 course timeline
+    \item \textbf{Toast} -- A brief, non-blocking UI notification message
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\section{Overall Description}
+% ─────────────────────────────────────────────
+ 
+\subsection{Product Overview}
+The WFQ Administrator Application provides a web-based interface for administrators to
+create and manage workflows. In addition to core workflow management, our team designed and
+tested two extended features: an email notification system and a workflow export system.
+Both features were validated through TestRail test runs.
+ 
+\subsection{Product Functions}
+The features covered by this SRS are:
+ 
+\begin{itemize}
+    \item Sending automated email notifications to users when workflow tasks are assigned,
+    reassigned, or completed.
+    \item Sending automated email notifications to administrators when new workflow steps
+    are created.
+    \item Exporting a workflow's details as a formatted PDF file.
+    \item Exporting a workflow's task list as a CSV file.
+    \item Enforcing admin authorization for all export and notification-related actions.
+\end{itemize}
+ 
+\subsection{User Classes}
+\begin{itemize}
+    \item \textbf{Administrators:} Have full access to workflow management, task oversight,
+    and export features. Receive email notifications when tasks are completed and steps are
+    created.
+    \item \textbf{Assigned Users:} Receive email notifications when tasks are assigned or
+    reassigned to them.
+    \item \textbf{QA Testers (Group 9):} Responsible for executing test cases in TestRail
+    and recording Pass/Fail results.
+\end{itemize}
+ 
+\subsection{Operating Environment}
+\begin{itemize}
+    \item \textbf{Web Browser:} The application runs in modern browsers including Chrome,
+    Edge, and Firefox.
+    \item \textbf{Email:} Notifications are sent via an SMTP server configured in the
+    application settings.
+    \item \textbf{File Downloads:} PDF and CSV exports are delivered as browser file
+    downloads.
+    \item \textbf{PDF Viewer:} Exported PDFs must be readable in standard viewers such as
+    Adobe Acrobat and browser-based PDF viewers.
+    \item \textbf{Spreadsheet Tools:} Exported CSVs must be compatible with Microsoft Excel
+    and Google Sheets.
+\end{itemize}
+ 
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+    \item An SMTP server is available and configured in \texttt{appsettings.json}.
+    \item Admin authorization is determined by the URL query string parameter
+    \texttt{?is\_admin=true}.
+    \item The database contains at least one workflow, with steps and tasks, for export
+    testing purposes.
+    \item TestRail is connected to the project and test runs have been created for each
+    snapshot.
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\section{Requirements Specification}
+% ─────────────────────────────────────────────
+ 
+\subsection{Snapshot 2: Email Notification System}
+The following requirements are derived from the ten test cases written and executed by our
+team in the Snapshot 2 TestRail test run.
+ 
+\subsubsection{Task Assignment Notifications}
+\begin{itemize}
+    \item \textbf{REQ-2.1:} The system shall send an email notification to the assigned
+    user when a task is assigned to them. (Derived from T-01)
+    \item \textbf{REQ-2.2:} When a task is reassigned, the system shall send an email
+    notification to the new assignee only. The previous assignee shall not receive a
+    notification. (Derived from T-02)
+    \item \textbf{REQ-2.3:} The system shall send an email notification to the workflow
+    administrator when a task is marked as completed. (Derived from T-03)
+    \item \textbf{REQ-2.4:} The system shall send an email notification to the workflow
+    administrator when a new step is created within a workflow. (Derived from T-04)
+\end{itemize}
+ 
+\subsubsection{Email Format Requirements}
+\begin{itemize}
+    \item \textbf{REQ-2.5:} Each notification email subject line shall follow the format:
+    \texttt{[WFQ] Task Assigned: \{TaskName\}}. (Derived from T-07)
+    \item \textbf{REQ-2.6:} Each notification email body shall include a valid URL link
+    to the relevant workflow details page. (Derived from T-08)
+\end{itemize}
+ 
+\subsubsection{Notification Suppression and Error Handling}
+\begin{itemize}
+    \item \textbf{REQ-2.7:} The system shall not send any email notification when a
+    read-only action is performed, such as viewing a workflow or step. (Derived from T-09)
+    \item \textbf{REQ-2.8:} If the SMTP server fails during a notification send, the system
+    shall log the error and allow the original user action to complete successfully. No
+    error message shall be shown to the user. (Derived from T-05)
+    \item \textbf{REQ-2.9:} The notification system shall be toggleable via a configuration
+    flag. When set to \texttt{Notifications:Enabled: false}, no emails shall be sent.
+    (Derived from T-06)
+    \item \textbf{REQ-2.10:} A completed task shall not be eligible for reassignment. The
+    reassign button shall be disabled or hidden for completed tasks. (Derived from T-10)
+\end{itemize}
+ 
+\subsection{Snapshots 3 and 4: Workflow Export and Report Generation}
+The following requirements are derived from the thirteen test cases written and executed
+across the Snapshot 3 and Snapshot 4 TestRail test runs. Snapshot 4 served as a final
+validation of the same feature set.
+ 
+\subsubsection{PDF Export Requirements}
+\begin{itemize}
+    \item \textbf{REQ-3.1:} The system shall allow an administrator to export a workflow
+    as a PDF file from the Workflow Details page. (Derived from T-01)
+    \item \textbf{REQ-3.2:} The exported PDF shall include the workflow name, a table of
+    all steps, and a table of all tasks. (Derived from T-01)
+    \item \textbf{REQ-3.3:} The PDF file shall be named using the format:
+    \texttt{\{WorkflowName\}\_Report\_\{YYYY-MM-DD\}.pdf}. (Derived from T-03)
+    \item \textbf{REQ-3.4:} If a workflow has no steps, the PDF shall still download
+    successfully and display the message: ``No steps have been added to this workflow.''
+    (Derived from T-05)
+    \item \textbf{REQ-3.5:} The exported PDF shall be readable in standard PDF viewers
+    including Adobe Acrobat and browser-based PDF viewers. (Derived from T-10)
+\end{itemize}
+ 
+\subsubsection{CSV Export Requirements}
+\begin{itemize}
+    \item \textbf{REQ-3.6:} The system shall allow an administrator to export a workflow's
+    task list as a CSV file from the Workflow Details page. (Derived from T-02)
+    \item \textbf{REQ-3.7:} The exported CSV shall contain the correct column headers and
+    all relevant task data rows. (Derived from T-02)
+    \item \textbf{REQ-3.8:} The CSV file shall be named using the format:
+    \texttt{\{WorkflowName\}\_Tasks\_\{YYYY-MM-DD\}.csv}. (Derived from T-04)
+    \item \textbf{REQ-3.9:} If a workflow has no tasks, the CSV shall still download
+    successfully and contain only the header row with no data rows. (Derived from T-06)
+    \item \textbf{REQ-3.10:} The exported CSV shall open correctly in both Microsoft Excel
+    and Google Sheets without formatting errors. (Derived from T-11)
+\end{itemize}
+ 
+\subsubsection{Export Behavior and Security Requirements}
+\begin{itemize}
+    \item \textbf{REQ-3.11:} After an export is triggered, the administrator shall remain
+    on the Workflow Details page. The file download shall trigger in the browser without
+    navigating away from the page. (Derived from T-09)
+    \item \textbf{REQ-3.12:} Export actions shall not create, update, or delete any records
+    in the database. All export operations are strictly read-only. (Derived from T-07)
+    \item \textbf{REQ-3.13:} Export functionality shall require admin authorization. Any
+    attempt to access an export URL without \texttt{?is\_admin=true} shall return an
+    Access Denied response. (Derived from T-08)
+    \item \textbf{REQ-3.14:} While an export is being generated, the export button shall
+    display a loading spinner and become disabled to prevent duplicate requests.
+    (Derived from T-12)
+    \item \textbf{REQ-3.15:} If the export fails due to a server error, the system shall
+    display a red error toast notification. The page shall remain functional after the
+    error. (Derived from T-13)
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\section{Non-Functional Requirements}
+% ─────────────────────────────────────────────
+ 
+\subsection{Performance}
+\begin{itemize}
+    \item PDF and CSV generation shall complete within 3 seconds for workflows containing
+    up to 100 steps and 500 tasks under normal server load.
+    \item Email notifications shall be sent asynchronously and shall not delay the
+    completion of the user's primary action.
+\end{itemize}
+ 
+\subsection{Security}
+\begin{itemize}
+    \item All export and notification actions shall require admin authorization via the
+    \texttt{?is\_admin=true} URL query string parameter.
+    \item SMTP credentials shall be stored in environment variables and shall never be
+    hardcoded or committed to source control.
+\end{itemize}
+ 
+\subsection{Reliability}
+\begin{itemize}
+    \item The system shall continue normal operation if an email notification fails to send.
+    \item The system shall continue normal operation if an export encounters a server error,
+    and shall display an appropriate error message to the user.
+\end{itemize}
+ 
+\subsection{Usability}
+\begin{itemize}
+    \item Error messages shall be user-friendly and shall not expose raw system or database
+    details to the user.
+    \item The export button shall provide visual feedback in the form of a loading spinner
+    during file generation.
+\end{itemize}
+ 
+% ─────────────────────────────────────────────
+\appendix
+\section{TestRail Test Case Reference}
+% ─────────────────────────────────────────────
+ 
+\begin{center}
+\begin{longtable}{lll}
+\toprule
+Requirement & TestRail ID & Test Case Title \\
+\midrule
+REQ-2.1  & Snapshot 2, T-01 & Task assigned --- notification sent \\
+REQ-2.2  & Snapshot 2, T-02 & Task reassigned --- new assignee notified \\
+REQ-2.3  & Snapshot 2, T-03 & Task completed --- admin notified \\
+REQ-2.4  & Snapshot 2, T-04 & Step created --- admin notified \\
+REQ-2.5  & Snapshot 2, T-07 & Email subject format correct \\
+REQ-2.6  & Snapshot 2, T-08 & Email body contains workflow link \\
+REQ-2.7  & Snapshot 2, T-09 & Read-only action --- no notification sent \\
+REQ-2.8  & Snapshot 2, T-05 & SMTP failure --- operation still succeeds \\
+REQ-2.9  & Snapshot 2, T-06 & Notifications disabled flag --- no email sent \\
+REQ-2.10 & Snapshot 2, T-10 & Completed task cannot be reassigned \\
+REQ-3.1  & Snapshot 3, T-01 & Export PDF --- workflow with steps and tasks \\
+REQ-3.2  & Snapshot 3, T-01 & Export PDF --- content includes steps and tasks \\
+REQ-3.3  & Snapshot 3, T-03 & PDF file name format correct \\
+REQ-3.4  & Snapshot 3, T-05 & Export PDF --- workflow with no steps \\
+REQ-3.5  & Snapshot 3, T-10 & PDF readable in standard PDF viewer \\
+REQ-3.6  & Snapshot 3, T-02 & Export CSV --- workflow with tasks \\
+REQ-3.7  & Snapshot 3, T-02 & Export CSV --- correct columns and data \\
+REQ-3.8  & Snapshot 3, T-04 & CSV file name format correct \\
+REQ-3.9  & Snapshot 3, T-06 & Export CSV --- workflow with no tasks \\
+REQ-3.10 & Snapshot 3, T-11 & CSV compatible with Excel and Google Sheets \\
+REQ-3.11 & Snapshot 3, T-09 & Admin stays on page after export \\
+REQ-3.12 & Snapshot 3, T-07 & Export does not modify database \\
+REQ-3.13 & Snapshot 3, T-08 & Export requires admin authorization \\
+REQ-3.14 & Snapshot 3, T-12 & Export button shows loading state \\
+REQ-3.15 & Snapshot 3, T-13 & Export error shows toast notification \\
+\bottomrule
+\end{longtable}
+\end{center}
+ 
+\section{TestRail Test Run Summary}
+ 
+\begin{center}
+\begin{tabular}{lllll}
+\toprule
+Snapshot & Feature & Total & Passed & Failed \\
+\midrule
+Snapshot 2 & Email Notification System      & 10 & 6  & 4 \\
+Snapshot 3 & Workflow Export (PDF and CSV)  & 13 & 9  & 2 \\
+Snapshot 4 & Final Validation (PDF and CSV) & 13 & 10 & 3 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+ 
+\end{document}
